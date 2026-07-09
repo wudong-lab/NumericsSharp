@@ -92,6 +92,26 @@ public sealed class PardisoSolverTests
     }
 
     [Fact]
+    public void Solve_ComputesLegacyUnsymmetricDenseCaseWhenNativeMklIsAvailable()
+    {
+        if (!NativeLibraryTestResolver.TryRegister())
+        {
+            return;
+        }
+
+        var matrix = CreateLegacyUnsymmetricDenseMatrix();
+        var rightHandSide = new[] { 4.02, 6.19, -8.22, -7.57, -3.03 };
+        var solution = new double[5];
+        using var solver = new PardisoSolver();
+
+        var result = solver.Solve(matrix, rightHandSide, solution);
+
+        Assert.True(result.Converged);
+        AssertEqual([-0.80071, -0.69524, 0.59391, 1.32173, 0.56576], solution, 1e-5);
+        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-9);
+    }
+
+    [Fact]
     public void Factorize_UpdatesStateWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -137,6 +157,27 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(0, 4, 3.0);
 
         return builder.ToCsr();
+    }
+
+    private static CsrMatrix CreateLegacyUnsymmetricDenseMatrix()
+    {
+        var builder = new SparseMatrixBuilder(5, 5);
+
+        AddDenseRow(builder, 0, [6.80, -6.05, -0.45, 8.32, -9.67]);
+        AddDenseRow(builder, 1, [-2.11, -3.30, 2.58, 2.71, -5.14]);
+        AddDenseRow(builder, 2, [5.66, 5.36, -2.70, 4.35, -7.26]);
+        AddDenseRow(builder, 3, [5.97, -4.44, 0.27, -7.17, 6.08]);
+        AddDenseRow(builder, 4, [8.23, 1.08, 9.04, 2.14, -6.87]);
+
+        return builder.ToCsr();
+    }
+
+    private static void AddDenseRow(SparseMatrixBuilder builder, int row, ReadOnlySpan<double> values)
+    {
+        for (var column = 0; column < values.Length; column++)
+        {
+            builder.Add(row, column, values[column]);
+        }
     }
 
     private static void AssertEqual(ReadOnlySpan<double> expected, ReadOnlySpan<double> actual, double tolerance)
