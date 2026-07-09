@@ -1,3 +1,4 @@
+using NumericsSharp.Mkl;
 using NumericsSharp.Mkl.Native;
 
 namespace NumericsSharp.Mkl.Tests.Native;
@@ -13,9 +14,10 @@ public sealed class MklNativeExceptionTests
     [Fact]
     public void ThrowIfFailed_ThrowsForFailureStatus()
     {
-        var exception = Assert.Throws<MklNativeException>(
+        var exception = Assert.Throws<MklBackendException>(
             () => MklNativeException.ThrowIfFailed(MklNativeStatus.InvalidArgument));
 
-        Assert.Equal(MklNativeStatus.InvalidArgument, exception.Status);
+        Assert.Equal((int)MklNativeStatus.InvalidArgument, exception.StatusCode);
+        Assert.Equal(nameof(MklNativeStatus.InvalidArgument), exception.StatusName);
     }
 }

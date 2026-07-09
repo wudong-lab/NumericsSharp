@@ -1,11 +1,13 @@
 using NumericsSharp.Core.LinearAlgebra;
+using NumericsSharp.Mkl.Native;
 using NumericsSharp.Solvers.LinearSolvers;
 
 namespace NumericsSharp.Mkl.Pardiso;
 
-public sealed class PardisoSolver : IDirectSparseSolver
+public sealed unsafe class PardisoSolver : IDirectSparseSolver
 {
     private PardisoCsrMatrix? _matrix;
+    private PardisoNativeHandle? _handle;
 
     public PardisoSolver(PardisoOptions? options = null)
     {
@@ -24,6 +26,22 @@ public sealed class PardisoSolver : IDirectSparseSolver
         ThrowIfNotSquare(matrix);
 
         _matrix = PardisoCsrMatrix.FromCsr(matrix);
+
+        _handle ??= CreateNativeHandle();
+
+        fixed (int* rowPointers = _matrix.RowPointers)
+        fixed (int* columns = _matrix.Columns)
+        {
+            MklNativeException.ThrowIfFailed(
+                PardisoNativeMethods.Analyze(
+                    _handle,
+                    _matrix.Order,
+                    _matrix.NonZeroCount,
+                    rowPointers,
+                    columns,
+                    Options.MatrixType));
+        }
+
         IsAnalyzed = true;
         IsFactorized = false;
     }
@@ -38,7 +56,17 @@ public sealed class PardisoSolver : IDirectSparseSolver
             Analyze(matrix);
         }
 
-        throw new PlatformNotSupportedException("MKL PARDISO native backend is not implemented yet.");
+        if (_matrix is null || _handle is null)
+        {
+            throw new InvalidOperationException("PARDISO matrix must be analyzed before factorization.");
+        }
+
+        fixed (double* values = _matrix.Values)
+        {
+            MklNativeException.ThrowIfFailed(PardisoNativeMethods.Factorize(_handle, values));
+        }
+
+        IsFactorized = true;
     }
 
     public SolverResult Solve(ILinearOperator matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution)
@@ -71,9 +99,17 @@ public sealed class PardisoSolver : IDirectSparseSolver
 
     public void Dispose()
     {
+        _handle?.Dispose();
+        _handle = null;
         _matrix = null;
         IsAnalyzed = false;
         IsFactorized = false;
+    }
+
+    private static PardisoNativeHandle CreateNativeHandle()
+    {
+        MklNativeException.ThrowIfFailed(PardisoNativeMethods.Create(out var handle));
+        return new PardisoNativeHandle(handle, ownsHandle: true);
     }
 
     private static void ThrowIfNotSquare(CsrMatrix matrix)

@@ -33,6 +33,12 @@ internal static class NativeLibraryTestResolver
 
     private static string? TryFindNativeLibraryPath()
     {
+        var outputCandidate = Path.Combine(AppContext.BaseDirectory, $"{MklNativeConstants.LibraryName}.dll");
+        if (File.Exists(outputCandidate))
+        {
+            return outputCandidate;
+        }
+
         var repositoryRoot = FindRepositoryRoot();
         if (repositoryRoot is null)
         {
