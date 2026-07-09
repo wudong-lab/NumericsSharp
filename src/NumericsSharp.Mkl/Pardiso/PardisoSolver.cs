@@ -3,7 +3,7 @@ using NumericsSharp.Solvers.LinearSolvers;
 
 namespace NumericsSharp.Mkl.Pardiso;
 
-public sealed class PardisoSolver : ILinearSolver, IDisposable
+public sealed class PardisoSolver : IDirectSparseSolver
 {
     private PardisoCsrMatrix? _matrix;
 

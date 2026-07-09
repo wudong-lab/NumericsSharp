@@ -1,5 +1,6 @@
 using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Mkl.Pardiso;
+using NumericsSharp.Solvers.LinearSolvers;
 
 namespace NumericsSharp.Mkl.Tests.Pardiso;
 
@@ -17,6 +18,15 @@ public sealed class PardisoSolverTests
         solver.Analyze(builder.ToCsr());
 
         Assert.True(solver.IsAnalyzed);
+        Assert.False(solver.IsFactorized);
+    }
+
+    [Fact]
+    public void PardisoSolver_ImplementsDirectSparseSolverInterface()
+    {
+        using IDirectSparseSolver solver = new PardisoSolver();
+
+        Assert.False(solver.IsAnalyzed);
         Assert.False(solver.IsFactorized);
     }
 
