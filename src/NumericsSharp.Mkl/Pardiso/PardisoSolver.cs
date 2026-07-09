@@ -94,7 +94,31 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
             throw new ArgumentException("Solution length must equal matrix column count.", nameof(solution));
         }
 
-        throw new PlatformNotSupportedException("MKL PARDISO native backend is not implemented yet.");
+        var initialResidualNorm = LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide);
+
+        if (!IsFactorized)
+        {
+            Factorize(matrix);
+        }
+
+        if (_handle is null)
+        {
+            throw new InvalidOperationException("PARDISO matrix must be factorized before solve.");
+        }
+
+        fixed (double* rightHandSidePointer = rightHandSide)
+        fixed (double* solutionPointer = solution)
+        {
+            MklNativeException.ThrowIfFailed(
+                PardisoNativeMethods.Solve(
+                    _handle,
+                    rightHandSidePointer,
+                    solutionPointer,
+                    rightHandSideCount: 1));
+        }
+
+        var finalResidualNorm = LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide);
+        return new SolverResult(SolverStatus.Converged, 0, initialResidualNorm, finalResidualNorm);
     }
 
     public void Dispose()
