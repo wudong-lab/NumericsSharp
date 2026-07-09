@@ -73,6 +73,37 @@ public sealed class PardisoSolverTests
     }
 
     [Fact]
+    public void Solve_ComputesSmallSpdSystemWithSymmetricPositiveDefiniteMatrixType()
+    {
+        if (!NativeLibraryTestResolver.TryRegister())
+        {
+            return;
+        }
+
+        var builder = new SparseMatrixBuilder(2, 2);
+        builder.AddSymmetric(0, 0, 4.0);
+        builder.AddSymmetric(0, 1, 1.0);
+        builder.AddSymmetric(1, 1, 3.0);
+
+        var matrix = builder.ToCsr();
+        var solution = new double[2];
+        using var solver = new PardisoSolver(
+            new PardisoOptions
+            {
+                MatrixType = PardisoMatrixType.RealSymmetricPositiveDefinite
+            });
+
+        var result = solver.Solve(matrix, [1.0, 2.0], solution);
+
+        Assert.True(result.Converged);
+        Assert.True(solver.IsAnalyzed);
+        Assert.True(solver.IsFactorized);
+        Assert.InRange(Math.Abs(solution[0] - 1.0 / 11.0), 0.0, 1e-12);
+        Assert.InRange(Math.Abs(solution[1] - 7.0 / 11.0), 0.0, 1e-12);
+        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
+    }
+
+    [Fact]
     public void Solve_ComputesLegacySparseSolveCaseWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())

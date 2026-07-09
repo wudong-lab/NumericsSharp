@@ -25,7 +25,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         ArgumentNullException.ThrowIfNull(matrix);
         ThrowIfNotSquare(matrix);
 
-        _matrix = PardisoCsrMatrix.FromCsr(matrix);
+        _matrix = PardisoCsrMatrix.FromCsr(matrix, Options.MatrixType);
 
         _handle ??= CreateNativeHandle();
 
