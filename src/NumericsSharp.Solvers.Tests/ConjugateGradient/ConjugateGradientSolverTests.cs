@@ -47,6 +47,27 @@ public sealed class ConjugateGradientSolverTests
 
         Assert.True(result.Converged);
         AssertEqual(expected, solution, 1e-5);
+        Assert.InRange(LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide), 0.0, 1e-10);
+    }
+
+    [Fact]
+    public void LinearSolver_SolvesThroughCommonSolverInterface()
+    {
+        var matrix = CreateLegacyDirectSparseSolveMatrix();
+        var rightHandSide = new[] { 1.0, 2.0, 3.0, 4.0, 5.0 };
+        var expected = new[] { -326.3333333, 983.0, 163.4166667, 398.0, 61.5 };
+        var solution = new double[5];
+        var solver = new ConjugateGradientLinearSolver(
+            new ConjugateGradientOptions
+            {
+                MaxIterations = 100,
+                RelativeTolerance = 1e-14
+            });
+
+        var result = solver.Solve(matrix, rightHandSide, solution);
+
+        Assert.True(result.Converged);
+        AssertEqual(expected, solution, 1e-5);
     }
 
     [Fact]
@@ -90,6 +111,29 @@ public sealed class ConjugateGradientSolverTests
                 MaxIterations = 100,
                 RelativeTolerance = 1e-14
             });
+
+        Assert.True(result.Converged);
+        AssertEqual(expected, solution, 1e-5);
+        Assert.InRange(LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide), 0.0, 1e-10);
+    }
+
+    [Fact]
+    public void LinearSolver_UsesPreconditionerWhenProvided()
+    {
+        var matrix = CreateLegacyDirectSparseSolveMatrix();
+        var preconditioner = new JacobiPreconditioner(matrix);
+        var rightHandSide = new[] { 1.0, 2.0, 3.0, 4.0, 5.0 };
+        var expected = new[] { -326.3333333, 983.0, 163.4166667, 398.0, 61.5 };
+        var solution = new double[5];
+        var solver = new ConjugateGradientLinearSolver(
+            new ConjugateGradientOptions
+            {
+                MaxIterations = 100,
+                RelativeTolerance = 1e-14
+            },
+            preconditioner);
+
+        var result = solver.Solve(matrix, rightHandSide, solution);
 
         Assert.True(result.Converged);
         AssertEqual(expected, solution, 1e-5);

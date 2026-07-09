@@ -1,9 +1,13 @@
 using NumericsSharp.Core.LinearAlgebra;
+using NumericsSharp.Solvers.LinearSolvers;
 
 namespace NumericsSharp.Solvers.ConjugateGradient;
 
-public sealed class ConjugateGradientSolver
+public sealed class ConjugateGradientSolver : ILinearSolver
 {
+    public SolverResult Solve(ILinearOperator matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution)
+        => Solve(matrix, rightHandSide, solution, options: null);
+
     public SolverResult Solve(
         ILinearOperator matrix,
         ReadOnlySpan<double> rightHandSide,

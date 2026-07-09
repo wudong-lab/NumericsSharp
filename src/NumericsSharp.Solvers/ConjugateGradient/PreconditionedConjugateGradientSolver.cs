@@ -1,4 +1,5 @@
 using NumericsSharp.Core.LinearAlgebra;
+using NumericsSharp.Solvers.LinearSolvers;
 using NumericsSharp.Solvers.Preconditioning;
 
 namespace NumericsSharp.Solvers.ConjugateGradient;

@@ -1,4 +1,4 @@
-namespace NumericsSharp.Solvers.ConjugateGradient;
+namespace NumericsSharp.Solvers.LinearSolvers;
 
 public enum SolverStatus
 {
