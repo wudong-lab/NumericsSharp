@@ -1,0 +1,34 @@
+using NumericsSharp.Core.LinearAlgebra;
+using NumericsSharp.Mkl.Pardiso;
+
+namespace NumericsSharp.Mkl.Tests.Pardiso;
+
+public sealed class PardisoSolverTests
+{
+    [Fact]
+    public void Analyze_AcceptsSquareCsrMatrix()
+    {
+        var builder = new SparseMatrixBuilder(2, 2);
+        builder.AddSymmetric(0, 0, 2.0);
+        builder.AddSymmetric(1, 1, 3.0);
+
+        using var solver = new PardisoSolver();
+
+        solver.Analyze(builder.ToCsr());
+
+        Assert.True(solver.IsAnalyzed);
+        Assert.False(solver.IsFactorized);
+    }
+
+    [Fact]
+    public void Solve_ThrowsUntilNativeBackendIsImplemented()
+    {
+        var builder = new SparseMatrixBuilder(2, 2);
+        builder.AddSymmetric(0, 0, 2.0);
+        builder.AddSymmetric(1, 1, 3.0);
+
+        using var solver = new PardisoSolver();
+
+        Assert.Throws<PlatformNotSupportedException>(() => solver.Solve(builder.ToCsr(), [1.0, 2.0], new double[2]));
+    }
+}

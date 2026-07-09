@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/tests/">
     <Project Path="NumericsSharp.Core.Tests/NumericsSharp.Core.Tests.csproj" />
+    <Project Path="NumericsSharp.Mkl.Tests/NumericsSharp.Mkl.Tests.csproj" />
     <Project Path="NumericsSharp.Solvers.Tests/NumericsSharp.Solvers.Tests.csproj" />
   </Folder>
   <Project Path="NumericsSharp.Core/NumericsSharp.Core.csproj" />
+  <Project Path="NumericsSharp.Mkl/NumericsSharp.Mkl.csproj" />
   <Project Path="NumericsSharp.Solvers/NumericsSharp.Solvers.csproj" />
 </Solution>
