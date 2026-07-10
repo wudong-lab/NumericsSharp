@@ -31,4 +31,17 @@ public sealed unsafe class PardisoNativeMethodsSmokeTests
 
         Assert.Equal(MklNativeStatus.Success, analyzeStatus);
     }
+
+    [Fact]
+    public void SetThreadCount_RejectsNonPositiveThreadCount()
+    {
+        if (!NativeLibraryTestResolver.TryRegister())
+        {
+            return;
+        }
+
+        var status = PardisoNativeMethods.SetThreadCount(0);
+
+        Assert.Equal(MklNativeStatus.InvalidArgument, status);
+    }
 }

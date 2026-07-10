@@ -11,6 +11,9 @@ internal static partial class PardisoNativeMethods
     [LibraryImport(MklNativeConstants.LibraryName, EntryPoint = "ns_pardiso_destroy")]
     internal static partial MklNativeStatus Destroy(IntPtr handle);
 
+    [LibraryImport(MklNativeConstants.LibraryName, EntryPoint = "ns_mkl_set_thread_count")]
+    internal static partial MklNativeStatus SetThreadCount(int threadCount);
+
     [LibraryImport(MklNativeConstants.LibraryName, EntryPoint = "ns_pardiso_analyze")]
     internal static unsafe partial MklNativeStatus Analyze(
         PardisoNativeHandle handle,

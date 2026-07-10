@@ -29,6 +29,8 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_create(NsPardisoHandle** handle);
 
 NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_destroy(NsPardisoHandle* handle);
 
+NS_MKL_NATIVE_API NsMklNativeStatus ns_mkl_set_thread_count(int threadCount);
+
 NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_analyze(
     NsPardisoHandle* handle,
     int order,

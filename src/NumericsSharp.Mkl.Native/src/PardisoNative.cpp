@@ -179,6 +179,19 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_destroy(NsPardisoHandle* handle)
     return NsMklNativeStatus::Success;
 }
 
+NS_MKL_NATIVE_API NsMklNativeStatus ns_mkl_set_thread_count(int threadCount)
+{
+    if (threadCount <= 0)
+    {
+        return NsMklNativeStatus::InvalidArgument;
+    }
+
+#ifdef NUMERICS_SHARP_USE_MKL
+    mkl_set_num_threads_local(threadCount);
+#endif
+    return NsMklNativeStatus::Success;
+}
+
 NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_analyze(
     NsPardisoHandle* handle,
     int order,
