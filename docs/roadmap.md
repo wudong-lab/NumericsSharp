@@ -30,22 +30,22 @@
 
 ## 中期任务
 
-1. native DLL 部署整理
+1. [x] native DLL 部署整理
 
    区分 Debug/Release native DLL 复制路径，后续为 NuGet runtime 包做准备。
 
-2. 错误信息增强
+2. [x] 错误信息增强
 
    native 返回更具体的 PARDISO error code，托管异常包含 phase、matrix type、order、nnz 等上下文。
 
-3. 求解器性能基准
+3. [x] 求解器性能基准
 
    增加 BenchmarkDotNet 基准测试，覆盖 CG、PCG、PARDISO full CSR 和 PARDISO SPD 上三角 CSR。
 
-4. 稀疏装配性能优化
+4. [x] 稀疏装配性能优化
 
    在当前 COO 排序合并方案基础上，评估预分配 pattern、并行分片装配和重复 factorization 场景。
 
-5. 预条件器扩展
+5. [x] 预条件器扩展
 
    在 Jacobi 之后补充 ILU0、IC0 等更适合 FEM SPD 系统的预条件器。

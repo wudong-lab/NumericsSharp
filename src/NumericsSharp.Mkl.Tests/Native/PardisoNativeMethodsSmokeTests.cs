@@ -33,6 +33,27 @@ public sealed unsafe class PardisoNativeMethodsSmokeTests
     }
 
     [Fact]
+    public void GetLastError_ReturnsInitialPardisoErrorState()
+    {
+        if (!NativeLibraryTestResolver.TryRegister())
+        {
+            return;
+        }
+
+        var createStatus = PardisoNativeMethods.Create(out var rawHandle);
+        Assert.Equal(MklNativeStatus.Success, createStatus);
+
+        using var handle = new PardisoNativeHandle(rawHandle, ownsHandle: true);
+        int phase;
+        int error;
+        var status = PardisoNativeMethods.GetLastError(handle, &phase, &error);
+
+        Assert.Equal(MklNativeStatus.Success, status);
+        Assert.Equal(0, phase);
+        Assert.Equal(0, error);
+    }
+
+    [Fact]
     public void SetThreadCount_RejectsNonPositiveThreadCount()
     {
         if (!NativeLibraryTestResolver.TryRegister())

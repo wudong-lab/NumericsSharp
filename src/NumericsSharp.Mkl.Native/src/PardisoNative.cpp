@@ -19,6 +19,8 @@ struct NsPardisoHandle
     NsPardisoMatrixType matrixType = NsPardisoMatrixType::RealSymmetricPositiveDefinite;
     bool analyzed = false;
     bool factorized = false;
+    int lastPhase = 0;
+    int lastError = 0;
 
 #ifdef NUMERICS_SHARP_USE_MKL
     void* internalSolverMemory[64] = {};
@@ -99,6 +101,9 @@ namespace
             mutableRightHandSide,
             mutableSolution,
             &error);
+
+        handle->lastPhase = static_cast<int>(phase);
+        handle->lastError = static_cast<int>(error);
 
         return error == 0 ? NsMklNativeStatus::Success : NsMklNativeStatus::MklError;
     }
@@ -189,6 +194,21 @@ NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_MklSetThreadCount(int threadCo
 #ifdef NUMERICS_SHARP_USE_MKL
     mkl_set_num_threads_local(threadCount);
 #endif
+    return NsMklNativeStatus::Success;
+}
+
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoGetLastError(
+    NsPardisoHandle* handle,
+    int* phase,
+    int* error)
+{
+    if (handle == nullptr || phase == nullptr || error == nullptr)
+    {
+        return NsMklNativeStatus::InvalidArgument;
+    }
+
+    *phase = handle->lastPhase;
+    *error = handle->lastError;
     return NsMklNativeStatus::Success;
 }
 

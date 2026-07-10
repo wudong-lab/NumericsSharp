@@ -31,6 +31,11 @@ NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoDestroy(NsPardisoHandle
 
 NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_MklSetThreadCount(int threadCount);
 
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoGetLastError(
+    NsPardisoHandle* handle,
+    int* phase,
+    int* error);
+
 NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoAnalyze(
     NsPardisoHandle* handle,
     int order,

@@ -14,6 +14,12 @@ internal static partial class PardisoNativeMethods
     [LibraryImport(MklNativeConstants.LibraryName, EntryPoint = "NumericsSharp_MklSetThreadCount")]
     internal static partial MklNativeStatus SetThreadCount(int threadCount);
 
+    [LibraryImport(MklNativeConstants.LibraryName, EntryPoint = "NumericsSharp_PardisoGetLastError")]
+    internal static unsafe partial MklNativeStatus GetLastError(
+        PardisoNativeHandle handle,
+        int* phase,
+        int* error);
+
     [LibraryImport(MklNativeConstants.LibraryName, EntryPoint = "NumericsSharp_PardisoAnalyze")]
     internal static unsafe partial MklNativeStatus Analyze(
         PardisoNativeHandle handle,

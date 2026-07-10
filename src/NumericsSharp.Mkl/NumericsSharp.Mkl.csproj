@@ -10,14 +10,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NativeBuildPlatform>win-x64</NativeBuildPlatform>
+    <NativeBuildOutputPath>..\NumericsSharp.Mkl.Native\build\$(NativeBuildPlatform)\$(Configuration)</NativeBuildOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="NumericsSharp.Mkl.Tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('..\NumericsSharp.Mkl.Native\build\win-x64\Debug\NumericsSharp.Mkl.Native.dll')">
-    <Content Include="..\NumericsSharp.Mkl.Native\build\win-x64\Debug\NumericsSharp.Mkl.Native.dll"
+  <ItemGroup Condition="Exists('$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll')">
+    <Content Include="$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll"
              Link="NumericsSharp.Mkl.Native.dll"
              TargetPath="NumericsSharp.Mkl.Native.dll"
              CopyToOutputDirectory="PreserveNewest"

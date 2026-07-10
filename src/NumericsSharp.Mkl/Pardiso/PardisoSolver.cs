@@ -42,7 +42,13 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
                     _matrix.NonZeroCount,
                     rowPointers,
                     columns,
-                    Options.MatrixType));
+                    Options.MatrixType),
+                operation: "PARDISO analyze",
+                phase: 11,
+                matrixType: Options.MatrixType.ToString(),
+                order: _matrix.Order,
+                nonZeroCount: _matrix.NonZeroCount,
+                pardisoErrorCode: null);
         }
 
         IsAnalyzed = true;
@@ -71,7 +77,10 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
         fixed (double* values = _matrix.Values)
         {
-            MklNativeException.ThrowIfFailed(PardisoNativeMethods.Factorize(_handle, values));
+            ThrowIfPardisoFailed(
+                PardisoNativeMethods.Factorize(_handle, values),
+                operation: "PARDISO factorize",
+                expectedPhase: 12);
         }
 
         IsFactorized = true;
@@ -135,12 +144,14 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         fixed (double* rightHandSidePointer = rightHandSide)
         fixed (double* solutionPointer = solution)
         {
-            MklNativeException.ThrowIfFailed(
+            ThrowIfPardisoFailed(
                 PardisoNativeMethods.Solve(
                     _handle,
                     rightHandSidePointer,
                     solutionPointer,
-                    rightHandSideCount));
+                    rightHandSideCount),
+                operation: "PARDISO solve",
+                expectedPhase: 33);
         }
 
         var finalResidualNorm = ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount);
@@ -168,7 +179,55 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
             ? 1
             : Options.Threading.NativeThreadCount;
 
-        MklNativeException.ThrowIfFailed(PardisoNativeMethods.SetThreadCount(nativeThreadCount));
+        MklNativeException.ThrowIfFailed(
+            PardisoNativeMethods.SetThreadCount(nativeThreadCount),
+            operation: "MKL set thread count",
+            phase: null,
+            matrixType: null,
+            order: null,
+            nonZeroCount: null,
+            pardisoErrorCode: null);
+    }
+
+    private void ThrowIfPardisoFailed(MklNativeStatus status, string operation, int expectedPhase)
+    {
+        if (status == MklNativeStatus.Success)
+        {
+            return;
+        }
+
+        var phase = expectedPhase;
+        int? pardisoErrorCode = null;
+
+        if (_handle is not null)
+        {
+            var lastErrorStatus = GetLastPardisoError(_handle, out var lastPhase, out var lastError);
+            if (lastErrorStatus == MklNativeStatus.Success)
+            {
+                phase = lastPhase == 0 ? expectedPhase : lastPhase;
+                pardisoErrorCode = lastError;
+            }
+        }
+
+        MklNativeException.ThrowIfFailed(
+            status,
+            operation,
+            phase,
+            Options.MatrixType.ToString(),
+            _matrix?.Order,
+            _matrix?.NonZeroCount,
+            pardisoErrorCode);
+    }
+
+    private static MklNativeStatus GetLastPardisoError(PardisoNativeHandle handle, out int phase, out int error)
+    {
+        var phaseBuffer = stackalloc int[1];
+        var errorBuffer = stackalloc int[1];
+        var status = PardisoNativeMethods.GetLastError(handle, phaseBuffer, errorBuffer);
+
+        phase = phaseBuffer[0];
+        error = errorBuffer[0];
+        return status;
     }
 
     private static void ThrowIfInvalidThreadingOptions(NumericsThreadingOptions options)
