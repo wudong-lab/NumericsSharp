@@ -35,17 +35,11 @@ public class SparseSolverBenchmarks
         this._jacobi = new JacobiPreconditioner(this._matrix);
 
         this._pardisoFullCsr = new PardisoSolver(
-            new PardisoOptions
-            {
-                MatrixType = PardisoMatrixType.RealUnsymmetric
-            });
+            new PardisoOptions(PardisoMatrixType.RealUnsymmetric));
         this._pardisoFullCsr.Factorize(this._matrix);
 
         this._pardisoSpdUpperCsr = new PardisoSolver(
-            new PardisoOptions
-            {
-                MatrixType = PardisoMatrixType.RealSymmetricPositiveDefinite
-            });
+            new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite));
         this._pardisoSpdUpperCsr.Factorize(this._matrix);
     }
 

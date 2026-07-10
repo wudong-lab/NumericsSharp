@@ -22,7 +22,7 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(0, 0, 2.0);
         builder.AddSymmetric(1, 1, 3.0);
 
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
 
         solver.Analyze(builder.ToCsr());
 
@@ -33,24 +33,24 @@ public sealed class PardisoSolverTests
     [Fact]
     public void PardisoSolver_ImplementsDirectSparseSolverInterface()
     {
-        using IDirectSparseSolver solver = new PardisoSolver();
+        using IDirectSparseSolver solver = CreateSpdSolver();
 
         Assert.False(solver.IsAnalyzed);
         Assert.False(solver.IsFactorized);
     }
 
     [Fact]
-    public void Options_DefaultToSymmetricPositiveDefiniteMatrixType()
+    public void Options_UseExplicitMatrixType()
     {
-        var options = new PardisoOptions();
+        var options = new PardisoOptions(PardisoMatrixType.RealSymmetricIndefinite);
 
-        Assert.Equal(PardisoMatrixType.RealSymmetricPositiveDefinite, options.MatrixType);
+        Assert.Equal(PardisoMatrixType.RealSymmetricIndefinite, options.MatrixType);
     }
 
     [Fact]
     public void Constructor_RejectsInvalidThreadingOptions()
     {
-        var options = new PardisoOptions
+        var options = new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite)
         {
             Threading = new NumericsThreadingOptions
             {
@@ -71,7 +71,7 @@ public sealed class PardisoSolverTests
 
         var matrix = CreateDiagonalMatrix(2.0, 3.0);
         using var solver = new PardisoSolver(
-            new PardisoOptions
+            new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite)
             {
                 Threading = new NumericsThreadingOptions
                 {
@@ -101,7 +101,7 @@ public sealed class PardisoSolverTests
 
         var matrix = builder.ToCsr();
         var solution = new double[2];
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
 
         try
         {
@@ -136,10 +136,7 @@ public sealed class PardisoSolverTests
         var matrix = builder.ToCsr();
         var solution = new double[2];
         using var solver = new PardisoSolver(
-            new PardisoOptions
-            {
-                MatrixType = PardisoMatrixType.RealSymmetricPositiveDefinite
-            });
+            new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite));
 
         var result = solver.Solve(matrix, [1.0, 2.0], solution);
 
@@ -167,11 +164,7 @@ public sealed class PardisoSolverTests
         var matrix = builder.ToCsr();
         var rightHandSides = new[] { 1.0, 2.0, 5.0, 8.0 };
         var solutions = new double[4];
-        using var solver = new PardisoSolver(
-            new PardisoOptions
-            {
-                MatrixType = PardisoMatrixType.RealSymmetricPositiveDefinite
-            });
+        using IDirectSparseSolver solver = CreateSpdSolver();
 
         var result = solver.Solve(matrix, rightHandSides, solutions, rightHandSideCount: 2);
 
@@ -189,7 +182,7 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(0, 0, 4.0);
         builder.AddSymmetric(1, 1, 3.0);
 
-        using var solver = new PardisoSolver();
+        using IDirectSparseSolver solver = CreateSpdSolver();
 
         Assert.Throws<ArgumentException>(() => solver.Solve(builder.ToCsr(), [1.0, 2.0, 3.0], new double[4], rightHandSideCount: 2));
     }
@@ -204,7 +197,7 @@ public sealed class PardisoSolverTests
 
         var matrix = CreateLegacyDirectSparseSolveMatrix();
         var solution = new double[5];
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
 
         var result = solver.Solve(matrix, [1.0, 2.0, 3.0, 4.0, 5.0], solution);
 
@@ -225,10 +218,7 @@ public sealed class PardisoSolverTests
         var rightHandSide = new[] { 4.02, 6.19, -8.22, -7.57, -3.03 };
         var solution = new double[5];
         using var solver = new PardisoSolver(
-            new PardisoOptions
-            {
-                MatrixType = PardisoMatrixType.RealUnsymmetric
-            });
+            new PardisoOptions(PardisoMatrixType.RealUnsymmetric));
 
         var result = solver.Solve(matrix, rightHandSide, solution);
 
@@ -249,7 +239,7 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(0, 0, 2.0);
         builder.AddSymmetric(1, 1, 3.0);
 
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
 
         try
         {
@@ -278,10 +268,7 @@ public sealed class PardisoSolverTests
         var firstMatrix = CreateDiagonalMatrix(2.0, 4.0);
         var secondMatrix = CreateDiagonalMatrix(5.0, 10.0);
         using var solver = new PardisoSolver(
-            new PardisoOptions
-            {
-                MatrixType = PardisoMatrixType.RealSymmetricPositiveDefinite
-            });
+            new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite));
 
         solver.Analyze(firstMatrix);
         solver.Factorize(firstMatrix);
@@ -315,7 +302,7 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(0, 1, 1.0);
         builder.AddSymmetric(1, 1, 4.0);
 
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
         solver.Analyze(analyzedMatrix);
 
         Assert.Throws<ArgumentException>(() => solver.Factorize(builder.ToCsr()));
@@ -339,7 +326,7 @@ public sealed class PardisoSolverTests
         var rightHandSide = new[] { 0.0, 0.0, 0.0 };
         var constrainedMatrix = DirichletBoundaryCondition.Apply(builder.ToCsr(), rightHandSide, [0], [10.0]);
         var solution = new double[3];
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
 
         var result = solver.Solve(constrainedMatrix, rightHandSide, solution);
 
@@ -368,7 +355,7 @@ public sealed class PardisoSolverTests
             [0, 1, 3],
             [0.0, 0.0, 0.0]);
         var solution = new double[6];
-        using var solver = new PardisoSolver();
+        using var solver = CreateSpdSolver();
 
         var result = solver.Solve(constrainedMatrix, rightHandSide, solution);
 
@@ -393,6 +380,12 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(0, 4, 3.0);
 
         return builder.ToCsr();
+    }
+
+    private static PardisoSolver CreateSpdSolver()
+    {
+        return new PardisoSolver(
+            new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite));
     }
 
     private static CsrMatrix CreateDiagonalMatrix(double first, double second)

@@ -10,9 +10,10 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
     private PardisoCsrMatrix? _matrix;
     private PardisoNativeHandle? _handle;
 
-    public PardisoSolver(PardisoOptions? options = null)
+    public PardisoSolver(PardisoOptions options)
     {
-        this.Options = options ?? new PardisoOptions();
+        ArgumentNullException.ThrowIfNull(options);
+        this.Options = options;
         ThrowIfInvalidThreadingOptions(this.Options.Threading);
     }
 
