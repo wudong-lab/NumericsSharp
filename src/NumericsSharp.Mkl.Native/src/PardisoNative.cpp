@@ -143,7 +143,7 @@ namespace
 }
 #endif
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_create(NsPardisoHandle** handle)
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoCreate(NsPardisoHandle** handle)
 {
     if (handle == nullptr)
     {
@@ -170,7 +170,7 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_create(NsPardisoHandle** handle)
     }
 }
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_destroy(NsPardisoHandle* handle)
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoDestroy(NsPardisoHandle* handle)
 {
 #ifdef NUMERICS_SHARP_USE_MKL
     release_pardiso(handle);
@@ -179,7 +179,7 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_destroy(NsPardisoHandle* handle)
     return NsMklNativeStatus::Success;
 }
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_mkl_set_thread_count(int threadCount)
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_MklSetThreadCount(int threadCount)
 {
     if (threadCount <= 0)
     {
@@ -192,7 +192,7 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_mkl_set_thread_count(int threadCount)
     return NsMklNativeStatus::Success;
 }
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_analyze(
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoAnalyze(
     NsPardisoHandle* handle,
     int order,
     int nonZeroCount,
@@ -233,7 +233,7 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_analyze(
     return NsMklNativeStatus::Success;
 }
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_factorize(
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoFactorize(
     NsPardisoHandle* handle,
     const double* values)
 {
@@ -273,7 +273,7 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_factorize(
 #endif
 }
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_solve(
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoSolve(
     NsPardisoHandle* handle,
     const double* rightHandSide,
     double* solution,

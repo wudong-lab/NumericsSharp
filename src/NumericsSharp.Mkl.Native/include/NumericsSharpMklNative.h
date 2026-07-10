@@ -25,13 +25,13 @@ enum class NsPardisoMatrixType : int
 
 struct NsPardisoHandle;
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_create(NsPardisoHandle** handle);
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoCreate(NsPardisoHandle** handle);
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_destroy(NsPardisoHandle* handle);
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoDestroy(NsPardisoHandle* handle);
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_mkl_set_thread_count(int threadCount);
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_MklSetThreadCount(int threadCount);
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_analyze(
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoAnalyze(
     NsPardisoHandle* handle,
     int order,
     int nonZeroCount,
@@ -39,11 +39,11 @@ NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_analyze(
     const int* columns,
     NsPardisoMatrixType matrixType);
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_factorize(
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoFactorize(
     NsPardisoHandle* handle,
     const double* values);
 
-NS_MKL_NATIVE_API NsMklNativeStatus ns_pardiso_solve(
+NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoSolve(
     NsPardisoHandle* handle,
     const double* rightHandSide,
     double* solution,
