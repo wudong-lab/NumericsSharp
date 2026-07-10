@@ -19,6 +19,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$ArtifactsPath = Join-Path $RepoRoot "artifacts"
 $BuildScriptPath = Join-Path $PSScriptRoot "build.ps1"
 $BenchmarkProjectPath = Join-Path $RepoRoot "src\NumericsSharp.Benchmarks\NumericsSharp.Benchmarks.csproj"
 $AdditionalBenchmarkArgs = @(@($BenchmarkArgs) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
@@ -47,13 +48,16 @@ if (-not $SkipBuild) {
     Invoke-CheckedCommand -FilePath powershell -Arguments $PowerShellArguments
 }
 
+$BenchmarkArtifactsPath = Join-Path $ArtifactsPath "benchmarks"
 $RunArguments = @(
     "run",
     "--configuration",
     $Configuration,
     "--project",
     $BenchmarkProjectPath,
-    "--"
+    "--",
+    "--artifacts",
+    $BenchmarkArtifactsPath
 )
 
 if ($List) {
