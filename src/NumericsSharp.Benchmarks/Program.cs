@@ -8,7 +8,7 @@ using NumericsSharp.Solvers.Preconditioning;
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 
 [MemoryDiagnoser]
-public sealed class SparseSolverBenchmarks
+public class SparseSolverBenchmarks
 {
     private CsrMatrix _matrix = null!;
     private double[] _rightHandSide = null!;
