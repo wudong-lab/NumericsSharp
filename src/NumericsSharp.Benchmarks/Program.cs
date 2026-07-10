@@ -1,4 +1,4 @@
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Mkl.Pardiso;
@@ -23,73 +23,69 @@ public class SparseSolverBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        _matrix = CreatePoissonMatrix(GridSize);
-        _rightHandSide = new double[_matrix.RowCount];
-        Array.Fill(_rightHandSide, 1.0);
+        this._matrix = CreatePoissonMatrix(this.GridSize);
+        this._rightHandSide = new double[this._matrix.RowCount];
+        Array.Fill(this._rightHandSide, 1.0);
 
-        _cgOptions = new ConjugateGradientOptions
+        this._cgOptions = new ConjugateGradientOptions
         {
-            MaxIterations = GridSize * GridSize,
+            MaxIterations = this.GridSize * this.GridSize,
             RelativeTolerance = 1e-10
         };
-        _jacobi = new JacobiPreconditioner(_matrix);
+        this._jacobi = new JacobiPreconditioner(this._matrix);
 
-        _pardisoFullCsr = new PardisoSolver(
+        this._pardisoFullCsr = new PardisoSolver(
             new PardisoOptions
             {
                 MatrixType = PardisoMatrixType.RealUnsymmetric
             });
-        _pardisoFullCsr.Factorize(_matrix);
+        this._pardisoFullCsr.Factorize(this._matrix);
 
-        _pardisoSpdUpperCsr = new PardisoSolver(
+        this._pardisoSpdUpperCsr = new PardisoSolver(
             new PardisoOptions
             {
                 MatrixType = PardisoMatrixType.RealSymmetricPositiveDefinite
             });
-        _pardisoSpdUpperCsr.Factorize(_matrix);
+        this._pardisoSpdUpperCsr.Factorize(this._matrix);
     }
 
     [GlobalCleanup]
     public void Cleanup()
     {
-        _pardisoFullCsr.Dispose();
-        _pardisoSpdUpperCsr.Dispose();
+        this._pardisoFullCsr.Dispose();
+        this._pardisoSpdUpperCsr.Dispose();
     }
 
     [Benchmark(Baseline = true)]
     public double ConjugateGradient()
     {
-        var solution = new double[_matrix.RowCount];
-        var result = new ConjugateGradientSolver().Solve(_matrix, _rightHandSide, solution, _cgOptions);
+        var solution = new double[this._matrix.RowCount];
+        var result = new ConjugateGradientSolver().Solve(this._matrix, this._rightHandSide, solution, this._cgOptions);
         return result.FinalResidualNorm;
     }
 
     [Benchmark]
     public double PreconditionedConjugateGradient()
     {
-        var solution = new double[_matrix.RowCount];
-        var result = new PreconditionedConjugateGradientSolver().Solve(
-            _matrix,
-            _jacobi,
-            _rightHandSide,
-            solution,
-            _cgOptions);
+        var solution = new double[this._matrix.RowCount];
+        var result = new PreconditionedConjugateGradientSolver().Solve(this._matrix, this._jacobi, this._rightHandSide,
+            solution, this._cgOptions);
         return result.FinalResidualNorm;
     }
 
     [Benchmark]
     public double PardisoFullCsrSolve()
     {
-        var solution = new double[_matrix.RowCount];
-        var result = _pardisoFullCsr.Solve(_matrix, _rightHandSide, solution);
+        var solution = new double[this._matrix.RowCount];
+        var result = this._pardisoFullCsr.Solve(this._matrix, this._rightHandSide, solution);
         return result.FinalResidualNorm;
     }
 
     [Benchmark]
     public double PardisoSpdUpperCsrSolve()
     {
-        var solution = new double[_matrix.RowCount];
-        var result = _pardisoSpdUpperCsr.Solve(_matrix, _rightHandSide, solution);
+        var solution = new double[this._matrix.RowCount];
+        var result = this._pardisoSpdUpperCsr.Solve(this._matrix, this._rightHandSide, solution);
         return result.FinalResidualNorm;
     }
 

@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Solvers.LinearSolvers;
 using NumericsSharp.Solvers.Preconditioning;
 
@@ -6,35 +6,23 @@ namespace NumericsSharp.Solvers.ConjugateGradient;
 
 public sealed class PreconditionedConjugateGradientSolver
 {
-    public SolverResult Solve(
-        ILinearOperator matrix,
-        IPreconditioner preconditioner,
-        ReadOnlySpan<double> rightHandSide,
-        Span<double> solution,
-        ConjugateGradientOptions? options = null)
+    public SolverResult Solve(ILinearOperator matrix, IPreconditioner preconditioner, ReadOnlySpan<double> rightHandSide,
+        Span<double> solution, ConjugateGradientOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(matrix);
         ArgumentNullException.ThrowIfNull(preconditioner);
 
         if (matrix.RowCount != matrix.ColumnCount)
-        {
             throw new ArgumentException("Preconditioned Conjugate Gradient requires a square matrix.", nameof(matrix));
-        }
 
         if (preconditioner.Order != matrix.RowCount)
-        {
             throw new ArgumentException("Preconditioner order must equal matrix order.", nameof(preconditioner));
-        }
 
         if (rightHandSide.Length != matrix.RowCount)
-        {
             throw new ArgumentException("Right hand side length must equal matrix row count.", nameof(rightHandSide));
-        }
 
         if (solution.Length != matrix.ColumnCount)
-        {
             throw new ArgumentException("Solution length must equal matrix column count.", nameof(solution));
-        }
 
         options ??= new ConjugateGradientOptions();
         ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxIterations, 1);

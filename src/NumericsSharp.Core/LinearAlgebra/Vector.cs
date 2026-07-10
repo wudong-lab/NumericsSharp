@@ -1,4 +1,4 @@
-namespace NumericsSharp.Core.LinearAlgebra;
+﻿namespace NumericsSharp.Core.LinearAlgebra;
 
 public sealed class Vector
 {
@@ -8,24 +8,24 @@ public sealed class Vector
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
 
-        _values = new double[count];
+        this._values = new double[count];
     }
 
     private Vector(double[] values)
     {
-        _values = values;
+        this._values = values;
     }
 
-    public int Count => _values.Length;
+    public int Count => this._values.Length;
 
-    public Span<double> Values => _values;
+    public Span<double> Values => this._values;
 
-    public ReadOnlySpan<double> ReadOnlyValues => _values;
+    public ReadOnlySpan<double> ReadOnlyValues => this._values;
 
     public double this[int index]
     {
-        get => _values[index];
-        set => _values[index] = value;
+        get => this._values[index];
+        set => this._values[index] = value;
     }
 
     public static Vector Zero(int count) => new(count);
@@ -40,5 +40,5 @@ public sealed class Vector
         return new Vector(values.ToArray());
     }
 
-    public Vector Clone() => new((double[])_values.Clone());
+    public Vector Clone() => new((double[])this._values.Clone());
 }

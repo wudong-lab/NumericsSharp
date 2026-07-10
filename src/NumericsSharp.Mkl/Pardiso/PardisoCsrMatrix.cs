@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Mkl.Pardiso;
 
@@ -8,20 +8,16 @@ internal sealed class PardisoCsrMatrix
 
     private PardisoCsrMatrix(int order, int[] rowPointers, int[] columns, double[] values)
     {
-        Order = order;
-        RowPointers = rowPointers;
-        Columns = columns;
-        Values = values;
+        this.Order = order;
+        this.RowPointers = rowPointers;
+        this.Columns = columns;
+        this.Values = values;
     }
 
     public int Order { get; }
-
-    public int NonZeroCount => Values.Length;
-
+    public int NonZeroCount => this.Values.Length;
     public int[] RowPointers { get; }
-
     public int[] Columns { get; }
-
     public double[] Values { get; }
 
     public static PardisoCsrMatrix FromCsr(CsrMatrix matrix, PardisoMatrixType matrixType = PardisoMatrixType.RealUnsymmetric)
@@ -29,9 +25,7 @@ internal sealed class PardisoCsrMatrix
         ArgumentNullException.ThrowIfNull(matrix);
 
         if (matrix.RowCount != matrix.ColumnCount)
-        {
             throw new ArgumentException("PARDISO CSR adapter requires a square matrix.", nameof(matrix));
-        }
 
         return RequiresUpperTriangleOnly(matrixType)
             ? FromUpperTriangleCsr(matrix)
@@ -52,11 +46,7 @@ internal sealed class PardisoCsrMatrix
             columns[i] = matrix.ColumnIndices[i] + OneBasedIndexOffset;
         }
 
-        return new PardisoCsrMatrix(
-            matrix.RowCount,
-            rowPointers,
-            columns,
-            (double[])matrix.Values.Clone());
+        return new PardisoCsrMatrix(matrix.RowCount, rowPointers, columns, (double[])matrix.Values.Clone());
     }
 
     private static PardisoCsrMatrix FromUpperTriangleCsr(CsrMatrix matrix)
@@ -75,10 +65,7 @@ internal sealed class PardisoCsrMatrix
             for (var index = start; index < end; index++)
             {
                 var column = matrix.ColumnIndices[index];
-                if (column < row)
-                {
-                    continue;
-                }
+                if (column < row) continue;
 
                 columns.Add(column + OneBasedIndexOffset);
                 values.Add(matrix.Values[index]);
@@ -87,11 +74,7 @@ internal sealed class PardisoCsrMatrix
             rowPointers[row + 1] = columns.Count + OneBasedIndexOffset;
         }
 
-        return new PardisoCsrMatrix(
-            matrix.RowCount,
-            rowPointers,
-            columns.ToArray(),
-            values.ToArray());
+        return new PardisoCsrMatrix(matrix.RowCount, rowPointers, columns.ToArray(), values.ToArray());
     }
 
     private static bool RequiresUpperTriangleOnly(PardisoMatrixType matrixType)

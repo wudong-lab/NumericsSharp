@@ -1,4 +1,4 @@
-namespace NumericsSharp.Core.LinearAlgebra;
+﻿namespace NumericsSharp.Core.LinearAlgebra;
 
 public sealed class SparseMatrixBuilder
 {
@@ -10,41 +10,42 @@ public sealed class SparseMatrixBuilder
         ArgumentOutOfRangeException.ThrowIfLessThan(columnCount, 1);
         ArgumentOutOfRangeException.ThrowIfNegative(capacity);
 
-        RowCount = rowCount;
-        ColumnCount = columnCount;
-        _entries = capacity > 0 ? new List<Entry>(capacity) : [];
+        this.RowCount = rowCount;
+        this.ColumnCount = columnCount;
+        this._entries = capacity > 0 ? new List<Entry>(capacity) : [];
     }
 
     public int RowCount { get; }
 
     public int ColumnCount { get; }
 
-    public int EntryCount => _entries.Count;
+    public int EntryCount => this._entries.Count;
 
     public void Add(int row, int column, double value)
     {
-        ThrowIfIndexOutOfRange(row, column);
+        this.ThrowIfIndexOutOfRange(row, column);
 
         if (value == 0.0)
         {
             return;
         }
 
-        _entries.Add(new Entry(row, column, value));
+        this._entries.Add(new Entry(row, column, value));
     }
 
     public void AddSymmetric(int row, int column, double value)
     {
-        Add(row, column, value);
+        this.Add(row, column, value);
 
         if (row != column)
         {
-            Add(column, row, value);
+            this.Add(column, row, value);
         }
     }
 
     public void AddSubmatrix(ReadOnlySpan<int> indices, ReadOnlySpan<double> values)
-        => AddSubmatrix(indices, indices, values);
+        =>
+            this.AddSubmatrix(indices, indices, values);
 
     public void AddSubmatrix(ReadOnlySpan<int> rowIndices, ReadOnlySpan<int> columnIndices, ReadOnlySpan<double> values)
     {
@@ -59,7 +60,7 @@ public sealed class SparseMatrixBuilder
 
             for (var localColumn = 0; localColumn < columnIndices.Length; localColumn++)
             {
-                Add(row, columnIndices[localColumn], values[localRow * columnIndices.Length + localColumn]);
+                this.Add(row, columnIndices[localColumn], values[localRow * columnIndices.Length + localColumn]);
             }
         }
     }
@@ -77,22 +78,22 @@ public sealed class SparseMatrixBuilder
 
             for (var localColumn = localRow; localColumn < indices.Length; localColumn++)
             {
-                AddSymmetric(row, indices[localColumn], values[localRow * indices.Length + localColumn]);
+                this.AddSymmetric(row, indices[localColumn], values[localRow * indices.Length + localColumn]);
             }
         }
     }
 
     public CsrMatrix ToCsr()
     {
-        if (_entries.Count == 0)
+        if (this._entries.Count == 0)
         {
-            return new CsrMatrix(RowCount, ColumnCount, new int[RowCount + 1], [], []);
+            return new CsrMatrix(this.RowCount, this.ColumnCount, new int[this.RowCount + 1], [], []);
         }
 
-        var entries = _entries.ToArray();
+        var entries = this._entries.ToArray();
         Array.Sort(entries, EntryComparer.Instance);
 
-        var rowCounts = new int[RowCount];
+        var rowCounts = new int[this.RowCount];
         var columns = new List<int>(entries.Length);
         var values = new List<double>(entries.Length);
 
@@ -115,23 +116,23 @@ public sealed class SparseMatrixBuilder
 
         AddMergedEntry(current.Row, current.Column, sum, rowCounts, columns, values);
 
-        var rowOffsets = new int[RowCount + 1];
-        for (var row = 0; row < RowCount; row++)
+        var rowOffsets = new int[this.RowCount + 1];
+        for (var row = 0; row < this.RowCount; row++)
         {
             rowOffsets[row + 1] = rowOffsets[row] + rowCounts[row];
         }
 
-        return new CsrMatrix(RowCount, ColumnCount, rowOffsets, columns.ToArray(), values.ToArray());
+        return new CsrMatrix(this.RowCount, this.ColumnCount, rowOffsets, columns.ToArray(), values.ToArray());
     }
 
     private void ThrowIfIndexOutOfRange(int row, int column)
     {
-        if ((uint)row >= (uint)RowCount)
+        if ((uint)row >= (uint)this.RowCount)
         {
             throw new ArgumentOutOfRangeException(nameof(row));
         }
 
-        if ((uint)column >= (uint)ColumnCount)
+        if ((uint)column >= (uint)this.ColumnCount)
         {
             throw new ArgumentOutOfRangeException(nameof(column));
         }

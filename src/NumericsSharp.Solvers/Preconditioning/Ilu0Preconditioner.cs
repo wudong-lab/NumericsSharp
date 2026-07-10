@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Solvers.Preconditioning;
 
@@ -14,39 +14,37 @@ public sealed class Ilu0Preconditioner : IPreconditioner
         ArgumentNullException.ThrowIfNull(matrix);
 
         if (matrix.RowCount != matrix.ColumnCount)
-        {
             throw new ArgumentException("ILU0 preconditioner requires a square matrix.", nameof(matrix));
-        }
 
-        Order = matrix.RowCount;
+        this.Order = matrix.RowCount;
         var factors = Factorize(matrix);
-        _lowerColumns = factors.LowerColumns;
-        _lowerValues = factors.LowerValues;
-        _upperColumns = factors.UpperColumns;
-        _upperValues = factors.UpperValues;
+        this._lowerColumns = factors.LowerColumns;
+        this._lowerValues = factors.LowerValues;
+        this._upperColumns = factors.UpperColumns;
+        this._upperValues = factors.UpperValues;
     }
 
     public int Order { get; }
 
     public void Apply(ReadOnlySpan<double> residual, Span<double> result)
     {
-        if (residual.Length != Order)
+        if (residual.Length != this.Order)
         {
             throw new ArgumentException("Residual length must equal preconditioner order.", nameof(residual));
         }
 
-        if (result.Length != Order)
+        if (result.Length != this.Order)
         {
             throw new ArgumentException("Result length must equal preconditioner order.", nameof(result));
         }
 
-        var work = new double[Order];
+        var work = new double[this.Order];
 
-        for (var row = 0; row < Order; row++)
+        for (var row = 0; row < this.Order; row++)
         {
             var sum = residual[row];
-            var columns = _lowerColumns[row];
-            var values = _lowerValues[row];
+            var columns = this._lowerColumns[row];
+            var values = this._lowerValues[row];
 
             for (var i = 0; i < columns.Length; i++)
             {
@@ -56,12 +54,12 @@ public sealed class Ilu0Preconditioner : IPreconditioner
             work[row] = sum;
         }
 
-        for (var row = Order - 1; row >= 0; row--)
+        for (var row = this.Order - 1; row >= 0; row--)
         {
             var sum = work[row];
             var diagonal = 0.0;
-            var columns = _upperColumns[row];
-            var values = _upperValues[row];
+            var columns = this._upperColumns[row];
+            var values = this._upperValues[row];
 
             for (var i = columns.Length - 1; i >= 0; i--)
             {
@@ -149,9 +147,5 @@ public sealed class Ilu0Preconditioner : IPreconditioner
             upperValues.Select(values => values.ToArray()).ToArray());
     }
 
-    private sealed record Factors(
-        int[][] LowerColumns,
-        double[][] LowerValues,
-        int[][] UpperColumns,
-        double[][] UpperValues);
+    private sealed record Factors(int[][] LowerColumns, double[][] LowerValues, int[][] UpperColumns, double[][] UpperValues);
 }

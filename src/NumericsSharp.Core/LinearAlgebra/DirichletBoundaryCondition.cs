@@ -1,4 +1,4 @@
-namespace NumericsSharp.Core.LinearAlgebra;
+﻿namespace NumericsSharp.Core.LinearAlgebra;
 
 public static class DirichletBoundaryCondition
 {
@@ -7,19 +7,13 @@ public static class DirichletBoundaryCondition
         ArgumentNullException.ThrowIfNull(matrix);
 
         if (matrix.RowCount != matrix.ColumnCount)
-        {
             throw new ArgumentException("Dirichlet boundary conditions require a square matrix.", nameof(matrix));
-        }
 
         if (rightHandSide.Length != matrix.RowCount)
-        {
             throw new ArgumentException("Right hand side length must equal matrix order.", nameof(rightHandSide));
-        }
 
         if (indices.Length != values.Length)
-        {
             throw new ArgumentException("Constrained index count must equal constrained value count.", nameof(values));
-        }
 
         var order = matrix.RowCount;
         var constrainedValues = new double[order];
@@ -29,14 +23,10 @@ public static class DirichletBoundaryCondition
         {
             var index = indices[i];
             if ((uint)index >= (uint)order)
-            {
                 throw new ArgumentOutOfRangeException(nameof(indices), "Constrained index is out of range.");
-            }
 
             if (isConstrained[index])
-            {
                 throw new ArgumentException("Duplicate constrained index is not supported.", nameof(indices));
-            }
 
             isConstrained[index] = true;
             constrainedValues[index] = values[i];

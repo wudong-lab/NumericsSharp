@@ -1,4 +1,4 @@
-namespace NumericsSharp.Mkl;
+﻿namespace NumericsSharp.Mkl;
 
 public sealed class MklBackendException : Exception
 {
@@ -11,9 +11,7 @@ public sealed class MklBackendException : Exception
             matrixType: null,
             order: null,
             nonZeroCount: null,
-            pardisoErrorCode: null)
-    {
-    }
+            pardisoErrorCode: null) { }
 
     public MklBackendException(
         int statusCode,
@@ -26,30 +24,25 @@ public sealed class MklBackendException : Exception
         int? pardisoErrorCode)
         : base(CreateMessage(statusCode, statusName, operation, phase, matrixType, order, nonZeroCount, pardisoErrorCode))
     {
-        StatusCode = statusCode;
-        StatusName = statusName;
-        Operation = operation;
-        Phase = phase;
-        MatrixType = matrixType;
-        Order = order;
-        NonZeroCount = nonZeroCount;
-        PardisoErrorCode = pardisoErrorCode;
+        this.StatusCode = statusCode;
+        this.StatusName = statusName;
+        this.Operation = operation;
+        this.Phase = phase;
+        this.MatrixType = matrixType;
+        this.Order = order;
+        this.NonZeroCount = nonZeroCount;
+        this.PardisoErrorCode = pardisoErrorCode;
     }
 
     public int StatusCode { get; }
-
     public string StatusName { get; }
-
     public string? Operation { get; }
 
     public int? Phase { get; }
-
     public string? MatrixType { get; }
 
     public int? Order { get; }
-
     public int? NonZeroCount { get; }
-
     public int? PardisoErrorCode { get; }
 
     private static string CreateMessage(

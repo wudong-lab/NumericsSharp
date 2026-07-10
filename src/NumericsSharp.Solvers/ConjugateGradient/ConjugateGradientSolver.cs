@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Solvers.LinearSolvers;
 
 namespace NumericsSharp.Solvers.ConjugateGradient;
@@ -6,32 +6,22 @@ namespace NumericsSharp.Solvers.ConjugateGradient;
 public sealed class ConjugateGradientSolver : ILinearSolver
 {
     public SolverResult Solve(ILinearOperator matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution)
-        => Solve(matrix, rightHandSide, solution, options: null);
+        => this.Solve(matrix, rightHandSide, solution, options: new ConjugateGradientOptions());
 
-    public SolverResult Solve(
-        ILinearOperator matrix,
-        ReadOnlySpan<double> rightHandSide,
-        Span<double> solution,
-        ConjugateGradientOptions? options = null)
+    public SolverResult Solve(ILinearOperator matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution,
+        ConjugateGradientOptions options)
     {
         ArgumentNullException.ThrowIfNull(matrix);
 
         if (matrix.RowCount != matrix.ColumnCount)
-        {
             throw new ArgumentException("Conjugate Gradient requires a square matrix.", nameof(matrix));
-        }
 
         if (rightHandSide.Length != matrix.RowCount)
-        {
             throw new ArgumentException("Right hand side length must equal matrix row count.", nameof(rightHandSide));
-        }
 
         if (solution.Length != matrix.ColumnCount)
-        {
             throw new ArgumentException("Solution length must equal matrix column count.", nameof(solution));
-        }
 
-        options ??= new ConjugateGradientOptions();
         ArgumentOutOfRangeException.ThrowIfLessThan(options.MaxIterations, 1);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(options.RelativeTolerance);
 

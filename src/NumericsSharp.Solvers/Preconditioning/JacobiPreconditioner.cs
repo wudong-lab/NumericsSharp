@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Solvers.Preconditioning;
 
@@ -15,11 +15,11 @@ public sealed class JacobiPreconditioner : IPreconditioner
             throw new ArgumentException("Jacobi preconditioner requires a square matrix.", nameof(matrix));
         }
 
-        Order = matrix.RowCount;
-        var diagonal = new double[Order];
+        this.Order = matrix.RowCount;
+        var diagonal = new double[this.Order];
         matrix.CopyDiagonalTo(diagonal);
 
-        _inverseDiagonal = new double[Order];
+        this._inverseDiagonal = new double[this.Order];
         for (var i = 0; i < diagonal.Length; i++)
         {
             if (diagonal[i] <= 0.0 || !double.IsFinite(diagonal[i]))
@@ -27,7 +27,7 @@ public sealed class JacobiPreconditioner : IPreconditioner
                 throw new ArgumentException("Jacobi preconditioner requires positive finite diagonal entries.", nameof(matrix));
             }
 
-            _inverseDiagonal[i] = 1.0 / diagonal[i];
+            this._inverseDiagonal[i] = 1.0 / diagonal[i];
         }
     }
 
@@ -35,19 +35,19 @@ public sealed class JacobiPreconditioner : IPreconditioner
 
     public void Apply(ReadOnlySpan<double> residual, Span<double> result)
     {
-        if (residual.Length != Order)
+        if (residual.Length != this.Order)
         {
             throw new ArgumentException("Residual length must equal preconditioner order.", nameof(residual));
         }
 
-        if (result.Length != Order)
+        if (result.Length != this.Order)
         {
             throw new ArgumentException("Result length must equal preconditioner order.", nameof(result));
         }
 
-        for (var i = 0; i < Order; i++)
+        for (var i = 0; i < this.Order; i++)
         {
-            result[i] = _inverseDiagonal[i] * residual[i];
+            result[i] = this._inverseDiagonal[i] * residual[i];
         }
     }
 }

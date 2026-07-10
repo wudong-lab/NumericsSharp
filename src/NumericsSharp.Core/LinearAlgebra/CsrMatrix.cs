@@ -1,4 +1,4 @@
-namespace NumericsSharp.Core.LinearAlgebra;
+﻿namespace NumericsSharp.Core.LinearAlgebra;
 
 public sealed class CsrMatrix : ILinearOperator
 {
@@ -43,44 +43,40 @@ public sealed class CsrMatrix : ILinearOperator
             }
         }
 
-        RowCount = rowCount;
-        ColumnCount = columnCount;
-        RowOffsets = rowOffsets;
-        ColumnIndices = columnIndices;
-        Values = values;
+        this.RowCount = rowCount;
+        this.ColumnCount = columnCount;
+        this.RowOffsets = rowOffsets;
+        this.ColumnIndices = columnIndices;
+        this.Values = values;
     }
 
     public int RowCount { get; }
-
     public int ColumnCount { get; }
-
-    public int NonZeroCount => Values.Length;
+    public int NonZeroCount => this.Values.Length;
 
     public int[] RowOffsets { get; }
-
     public int[] ColumnIndices { get; }
-
     public double[] Values { get; }
 
     public void CopyDiagonalTo(Span<double> diagonal)
     {
-        if (diagonal.Length != Math.Min(RowCount, ColumnCount))
+        if (diagonal.Length != Math.Min(this.RowCount, this.ColumnCount))
         {
             throw new ArgumentException("Diagonal span length must equal min(rowCount, columnCount).", nameof(diagonal));
         }
 
         diagonal.Clear();
 
-        for (var row = 0; row < RowCount; row++)
+        for (var row = 0; row < this.RowCount; row++)
         {
-            var start = RowOffsets[row];
-            var end = RowOffsets[row + 1];
+            var start = this.RowOffsets[row];
+            var end = this.RowOffsets[row + 1];
 
             for (var index = start; index < end; index++)
             {
-                if (ColumnIndices[index] == row)
+                if (this.ColumnIndices[index] == row)
                 {
-                    diagonal[row] = Values[index];
+                    diagonal[row] = this.Values[index];
                     break;
                 }
             }
@@ -89,25 +85,25 @@ public sealed class CsrMatrix : ILinearOperator
 
     public void Multiply(ReadOnlySpan<double> x, Span<double> y)
     {
-        if (x.Length != ColumnCount)
+        if (x.Length != this.ColumnCount)
         {
             throw new ArgumentException("Input vector length must equal matrix column count.", nameof(x));
         }
 
-        if (y.Length != RowCount)
+        if (y.Length != this.RowCount)
         {
             throw new ArgumentException("Output vector length must equal matrix row count.", nameof(y));
         }
 
-        for (var row = 0; row < RowCount; row++)
+        for (var row = 0; row < this.RowCount; row++)
         {
             var sum = 0.0;
-            var start = RowOffsets[row];
-            var end = RowOffsets[row + 1];
+            var start = this.RowOffsets[row];
+            var end = this.RowOffsets[row + 1];
 
             for (var index = start; index < end; index++)
             {
-                sum += Values[index] * x[ColumnIndices[index]];
+                sum += this.Values[index] * x[this.ColumnIndices[index]];
             }
 
             y[row] = sum;

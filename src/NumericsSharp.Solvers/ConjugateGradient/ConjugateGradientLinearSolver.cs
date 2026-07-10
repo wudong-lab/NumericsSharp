@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Solvers.LinearSolvers;
 using NumericsSharp.Solvers.Preconditioning;
 
@@ -9,25 +9,22 @@ public sealed class ConjugateGradientLinearSolver : ILinearSolver
     private readonly ConjugateGradientSolver _conjugateGradientSolver = new();
     private readonly PreconditionedConjugateGradientSolver _preconditionedConjugateGradientSolver = new();
 
-    public ConjugateGradientLinearSolver(
-        ConjugateGradientOptions? options = null,
-        IPreconditioner? preconditioner = null)
+    public ConjugateGradientLinearSolver(ConjugateGradientOptions? options = null, IPreconditioner? preconditioner = null)
     {
-        Options = options ?? new ConjugateGradientOptions();
-        Preconditioner = preconditioner;
+        this.Options = options ?? new ConjugateGradientOptions();
+        this.Preconditioner = preconditioner;
     }
 
     public ConjugateGradientOptions Options { get; }
-
     public IPreconditioner? Preconditioner { get; }
 
     public SolverResult Solve(ILinearOperator matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution)
     {
-        if (Preconditioner is null)
+        if (this.Preconditioner is null)
         {
-            return _conjugateGradientSolver.Solve(matrix, rightHandSide, solution, Options);
+            return this._conjugateGradientSolver.Solve(matrix, rightHandSide, solution, this.Options);
         }
 
-        return _preconditionedConjugateGradientSolver.Solve(matrix, Preconditioner, rightHandSide, solution, Options);
+        return this._preconditionedConjugateGradientSolver.Solve(matrix, this.Preconditioner, rightHandSide, solution, this.Options);
     }
 }

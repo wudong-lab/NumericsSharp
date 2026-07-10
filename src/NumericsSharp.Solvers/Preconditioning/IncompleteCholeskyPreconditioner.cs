@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Solvers.Preconditioning;
 
@@ -16,34 +16,34 @@ public sealed class IncompleteCholeskyPreconditioner : IPreconditioner
             throw new ArgumentException("Incomplete Cholesky preconditioner requires a square matrix.", nameof(matrix));
         }
 
-        Order = matrix.RowCount;
+        this.Order = matrix.RowCount;
         var lower = Factorize(matrix);
-        _lowerColumns = lower.Columns;
-        _lowerValues = lower.Values;
+        this._lowerColumns = lower.Columns;
+        this._lowerValues = lower.Values;
     }
 
     public int Order { get; }
 
     public void Apply(ReadOnlySpan<double> residual, Span<double> result)
     {
-        if (residual.Length != Order)
+        if (residual.Length != this.Order)
         {
             throw new ArgumentException("Residual length must equal preconditioner order.", nameof(residual));
         }
 
-        if (result.Length != Order)
+        if (result.Length != this.Order)
         {
             throw new ArgumentException("Result length must equal preconditioner order.", nameof(result));
         }
 
-        var work = new double[Order];
+        var work = new double[this.Order];
 
-        for (var row = 0; row < Order; row++)
+        for (var row = 0; row < this.Order; row++)
         {
             var sum = residual[row];
             var diagonal = 0.0;
-            var columns = _lowerColumns[row];
-            var values = _lowerValues[row];
+            var columns = this._lowerColumns[row];
+            var values = this._lowerValues[row];
 
             for (var i = 0; i < columns.Length; i++)
             {
@@ -60,14 +60,14 @@ public sealed class IncompleteCholeskyPreconditioner : IPreconditioner
             work[row] = sum / diagonal;
         }
 
-        for (var row = Order - 1; row >= 0; row--)
+        for (var row = this.Order - 1; row >= 0; row--)
         {
             var sum = work[row];
 
-            for (var lowerRow = row + 1; lowerRow < Order; lowerRow++)
+            for (var lowerRow = row + 1; lowerRow < this.Order; lowerRow++)
             {
-                var columns = _lowerColumns[lowerRow];
-                var values = _lowerValues[lowerRow];
+                var columns = this._lowerColumns[lowerRow];
+                var values = this._lowerValues[lowerRow];
 
                 for (var i = 0; i < columns.Length; i++)
                 {
@@ -85,14 +85,14 @@ public sealed class IncompleteCholeskyPreconditioner : IPreconditioner
                 }
             }
 
-            result[row] = sum / GetDiagonal(row);
+            result[row] = sum / this.GetDiagonal(row);
         }
     }
 
     private double GetDiagonal(int row)
     {
-        var columns = _lowerColumns[row];
-        var values = _lowerValues[row];
+        var columns = this._lowerColumns[row];
+        var values = this._lowerValues[row];
 
         for (var i = columns.Length - 1; i >= 0; i--)
         {

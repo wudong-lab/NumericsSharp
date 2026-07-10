@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using NumericsSharp.Mkl.Pardiso;
 
 namespace NumericsSharp.Mkl.Native;

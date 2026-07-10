@@ -1,24 +1,20 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace NumericsSharp.Mkl.Native;
 
 internal sealed class PardisoNativeHandle : SafeHandle
 {
-    private PardisoNativeHandle()
-        : base(IntPtr.Zero, ownsHandle: true)
+    private PardisoNativeHandle() : base(nint.Zero, ownsHandle: true) { }
+
+    public PardisoNativeHandle(nint handle, bool ownsHandle) : base(nint.Zero, ownsHandle)
     {
+        this.SetHandle(handle);
     }
 
-    public PardisoNativeHandle(IntPtr handle, bool ownsHandle)
-        : base(IntPtr.Zero, ownsHandle)
-    {
-        SetHandle(handle);
-    }
-
-    public override bool IsInvalid => handle == IntPtr.Zero;
+    public override bool IsInvalid => this.handle == nint.Zero;
 
     protected override bool ReleaseHandle()
     {
-        return PardisoNativeMethods.Destroy(handle) == MklNativeStatus.Success;
+        return PardisoNativeMethods.Destroy(this.handle) == MklNativeStatus.Success;
     }
 }

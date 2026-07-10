@@ -1,10 +1,6 @@
-namespace NumericsSharp.Solvers.LinearSolvers;
+﻿namespace NumericsSharp.Solvers.LinearSolvers;
 
-public sealed record SolverResult(
-    SolverStatus Status,
-    int IterationCount,
-    double InitialResidualNorm,
-    double FinalResidualNorm)
+public sealed record SolverResult(SolverStatus Status, int IterationCount, double InitialResidualNorm, double FinalResidualNorm)
 {
-    public bool Converged => Status == SolverStatus.Converged;
+    public bool Converged => this.Status == SolverStatus.Converged;
 }

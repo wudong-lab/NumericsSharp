@@ -1,4 +1,4 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Core.Threading;
 using NumericsSharp.Mkl.Native;
 using NumericsSharp.Solvers.LinearSolvers;
@@ -12,14 +12,12 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
     public PardisoSolver(PardisoOptions? options = null)
     {
-        Options = options ?? new PardisoOptions();
-        ThrowIfInvalidThreadingOptions(Options.Threading);
+        this.Options = options ?? new PardisoOptions();
+        ThrowIfInvalidThreadingOptions(this.Options.Threading);
     }
 
     public PardisoOptions Options { get; }
-
     public bool IsAnalyzed { get; private set; }
-
     public bool IsFactorized { get; private set; }
 
     public void Analyze(CsrMatrix matrix)
@@ -27,32 +25,29 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         ArgumentNullException.ThrowIfNull(matrix);
         ThrowIfNotSquare(matrix);
 
-        _matrix = PardisoCsrMatrix.FromCsr(matrix, Options.MatrixType);
+        this._matrix = PardisoCsrMatrix.FromCsr(matrix, this.Options.MatrixType);
 
-        _handle ??= CreateNativeHandle();
-        ApplyThreadingOptions();
+        this._handle ??= CreateNativeHandle();
+        this.ApplyThreadingOptions();
 
-        fixed (int* rowPointers = _matrix.RowPointers)
-        fixed (int* columns = _matrix.Columns)
+        fixed (int* rowPointers = this._matrix.RowPointers)
+        fixed (int* columns = this._matrix.Columns)
         {
+            var status = PardisoNativeMethods.Analyze(this._handle, this._matrix.Order, this._matrix.NonZeroCount,
+                rowPointers, columns, this.Options.MatrixType);
+
             MklNativeException.ThrowIfFailed(
-                PardisoNativeMethods.Analyze(
-                    _handle,
-                    _matrix.Order,
-                    _matrix.NonZeroCount,
-                    rowPointers,
-                    columns,
-                    Options.MatrixType),
+                status,
                 operation: "PARDISO analyze",
                 phase: 11,
-                matrixType: Options.MatrixType.ToString(),
-                order: _matrix.Order,
-                nonZeroCount: _matrix.NonZeroCount,
+                matrixType: this.Options.MatrixType.ToString(),
+                order: this._matrix.Order,
+                nonZeroCount: this._matrix.NonZeroCount,
                 pardisoErrorCode: null);
         }
 
-        IsAnalyzed = true;
-        IsFactorized = false;
+        this.IsAnalyzed = true;
+        this.IsFactorized = false;
     }
 
     public void Factorize(CsrMatrix matrix)
@@ -60,45 +55,39 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         ArgumentNullException.ThrowIfNull(matrix);
         ThrowIfNotSquare(matrix);
 
-        if (!IsAnalyzed)
+        if (!this.IsAnalyzed)
         {
-            Analyze(matrix);
+            this.Analyze(matrix);
         }
 
-        if (_matrix is null || _handle is null)
-        {
+        if (this._matrix is null || this._handle is null)
             throw new InvalidOperationException("PARDISO matrix must be analyzed before factorization.");
-        }
 
-        var factorizationMatrix = PardisoCsrMatrix.FromCsr(matrix, Options.MatrixType);
-        ThrowIfDifferentStructure(_matrix, factorizationMatrix);
-        _matrix = factorizationMatrix;
-        ApplyThreadingOptions();
+        var factorizationMatrix = PardisoCsrMatrix.FromCsr(matrix, this.Options.MatrixType);
+        ThrowIfDifferentStructure(this._matrix, factorizationMatrix);
+        this._matrix = factorizationMatrix;
+        this.ApplyThreadingOptions();
 
-        fixed (double* values = _matrix.Values)
+        fixed (double* values = this._matrix.Values)
         {
-            ThrowIfPardisoFailed(
-                PardisoNativeMethods.Factorize(_handle, values),
-                operation: "PARDISO factorize",
-                expectedPhase: 12);
+            var status = PardisoNativeMethods.Factorize(this._handle, values);
+            this.ThrowIfPardisoFailed(status, operation: "PARDISO factorize", expectedPhase: 12);
         }
 
-        IsFactorized = true;
+        this.IsFactorized = true;
     }
 
     public SolverResult Solve(ILinearOperator matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution)
     {
         if (matrix is not CsrMatrix csrMatrix)
-        {
             throw new ArgumentException("PARDISO solver requires a CSR matrix.", nameof(matrix));
-        }
 
-        return Solve(csrMatrix, rightHandSide, solution);
+        return this.Solve(csrMatrix, rightHandSide, solution);
     }
 
     public SolverResult Solve(CsrMatrix matrix, ReadOnlySpan<double> rightHandSide, Span<double> solution)
     {
-        return Solve(matrix, rightHandSide, solution, rightHandSideCount: 1);
+        return this.Solve(matrix, rightHandSide, solution, rightHandSideCount: 1);
     }
 
     public SolverResult Solve(
@@ -114,44 +103,34 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         var expectedRightHandSideLength = checked(matrix.RowCount * rightHandSideCount);
         if (rightHandSide.Length != expectedRightHandSideLength)
         {
-            throw new ArgumentException(
-                "Right hand side length must equal matrix row count multiplied by right hand side count.",
-                nameof(rightHandSide));
+            throw new ArgumentException("Right hand side length must equal matrix row count multiplied by right hand side count.", nameof(rightHandSide));
         }
 
         var expectedSolutionLength = checked(matrix.ColumnCount * rightHandSideCount);
         if (solution.Length != expectedSolutionLength)
         {
-            throw new ArgumentException(
-                "Solution length must equal matrix column count multiplied by right hand side count.",
-                nameof(solution));
+            throw new ArgumentException("Solution length must equal matrix column count multiplied by right hand side count.", nameof(solution));
         }
 
         var initialResidualNorm = ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount);
 
-        if (!IsFactorized)
+        if (!this.IsFactorized)
         {
-            Factorize(matrix);
+            this.Factorize(matrix);
         }
 
-        if (_handle is null)
+        if (this._handle is null)
         {
             throw new InvalidOperationException("PARDISO matrix must be factorized before solve.");
         }
 
-        ApplyThreadingOptions();
+        this.ApplyThreadingOptions();
 
         fixed (double* rightHandSidePointer = rightHandSide)
         fixed (double* solutionPointer = solution)
         {
-            ThrowIfPardisoFailed(
-                PardisoNativeMethods.Solve(
-                    _handle,
-                    rightHandSidePointer,
-                    solutionPointer,
-                    rightHandSideCount),
-                operation: "PARDISO solve",
-                expectedPhase: 33);
+            var status = PardisoNativeMethods.Solve(this._handle, rightHandSidePointer, solutionPointer, rightHandSideCount);
+            this.ThrowIfPardisoFailed(status, operation: "PARDISO solve", expectedPhase: 33);
         }
 
         var finalResidualNorm = ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount);
@@ -160,11 +139,11 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
     public void Dispose()
     {
-        _handle?.Dispose();
-        _handle = null;
-        _matrix = null;
-        IsAnalyzed = false;
-        IsFactorized = false;
+        this._handle?.Dispose();
+        this._handle = null;
+        this._matrix = null;
+        this.IsAnalyzed = false;
+        this.IsFactorized = false;
     }
 
     private static PardisoNativeHandle CreateNativeHandle()
@@ -175,33 +154,25 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
     private void ApplyThreadingOptions()
     {
-        var nativeThreadCount = Options.Threading.Mode == ParallelMode.ManagedOuterParallel
+        var nativeThreadCount = this.Options.Threading.Mode == ParallelMode.ManagedOuterParallel
             ? 1
-            : Options.Threading.NativeThreadCount;
+            : this.Options.Threading.NativeThreadCount;
 
-        MklNativeException.ThrowIfFailed(
-            PardisoNativeMethods.SetThreadCount(nativeThreadCount),
-            operation: "MKL set thread count",
-            phase: null,
-            matrixType: null,
-            order: null,
-            nonZeroCount: null,
-            pardisoErrorCode: null);
+        var status = PardisoNativeMethods.SetThreadCount(nativeThreadCount);
+        MklNativeException.ThrowIfFailed(status, operation: "MKL set thread count",
+            phase: null, matrixType: null, order: null, nonZeroCount: null, pardisoErrorCode: null);
     }
 
     private void ThrowIfPardisoFailed(MklNativeStatus status, string operation, int expectedPhase)
     {
-        if (status == MklNativeStatus.Success)
-        {
-            return;
-        }
+        if (status == MklNativeStatus.Success) return;
 
         var phase = expectedPhase;
         int? pardisoErrorCode = null;
 
-        if (_handle is not null)
+        if (this._handle is not null)
         {
-            var lastErrorStatus = GetLastPardisoError(_handle, out var lastPhase, out var lastError);
+            var lastErrorStatus = GetLastPardisoError(this._handle, out var lastPhase, out var lastError);
             if (lastErrorStatus == MklNativeStatus.Success)
             {
                 phase = lastPhase == 0 ? expectedPhase : lastPhase;
@@ -209,14 +180,8 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
             }
         }
 
-        MklNativeException.ThrowIfFailed(
-            status,
-            operation,
-            phase,
-            Options.MatrixType.ToString(),
-            _matrix?.Order,
-            _matrix?.NonZeroCount,
-            pardisoErrorCode);
+        MklNativeException.ThrowIfFailed(status, operation, phase, this.Options.MatrixType.ToString(), 
+            this._matrix?.Order, this._matrix?.NonZeroCount, pardisoErrorCode);
     }
 
     private static MklNativeStatus GetLastPardisoError(PardisoNativeHandle handle, out int phase, out int error)
@@ -258,11 +223,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         }
     }
 
-    private static double ComputeMaxResidualNorm(
-        CsrMatrix matrix,
-        ReadOnlySpan<double> solution,
-        ReadOnlySpan<double> rightHandSide,
-        int rightHandSideCount)
+    private static double ComputeMaxResidualNorm(CsrMatrix matrix, ReadOnlySpan<double> solution, ReadOnlySpan<double> rightHandSide, int rightHandSideCount)
     {
         var maxResidualNorm = 0.0;
         var order = matrix.RowCount;
