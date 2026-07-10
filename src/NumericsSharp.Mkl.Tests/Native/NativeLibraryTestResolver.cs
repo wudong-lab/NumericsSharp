@@ -50,7 +50,7 @@ internal static class NativeLibraryTestResolver
             "src",
             "NumericsSharp.Mkl.Native",
             "build",
-            "windows-x64",
+            "win-x64",
             "Debug",
             $"{MklNativeConstants.LibraryName}.dll");
 

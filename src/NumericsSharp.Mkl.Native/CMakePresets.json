@@ -2,24 +2,24 @@
   "version": 6,
   "configurePresets": [
     {
-      "name": "windows-x64",
+      "name": "win-x64",
       "displayName": "Windows x64",
       "generator": "Visual Studio 18 2026",
       "architecture": "x64",
-      "binaryDir": "${sourceDir}/build/windows-x64"
+      "binaryDir": "${sourceDir}/build/win-x64"
     }
   ],
   "buildPresets": [
     {
-      "name": "windows-x64-debug",
+      "name": "win-x64-debug",
       "displayName": "Windows x64 Debug",
-      "configurePreset": "windows-x64",
+      "configurePreset": "win-x64",
       "configuration": "Debug"
     },
     {
-      "name": "windows-x64-release",
+      "name": "win-x64-release",
       "displayName": "Windows x64 Release",
-      "configurePreset": "windows-x64",
+      "configurePreset": "win-x64",
       "configuration": "Release"
     }
   ]

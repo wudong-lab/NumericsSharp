@@ -16,8 +16,8 @@
     <InternalsVisibleTo Include="NumericsSharp.Mkl.Tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('..\NumericsSharp.Mkl.Native\build\windows-x64\Debug\NumericsSharp.Mkl.Native.dll')">
-    <Content Include="..\NumericsSharp.Mkl.Native\build\windows-x64\Debug\NumericsSharp.Mkl.Native.dll"
+  <ItemGroup Condition="Exists('..\NumericsSharp.Mkl.Native\build\win-x64\Debug\NumericsSharp.Mkl.Native.dll')">
+    <Content Include="..\NumericsSharp.Mkl.Native\build\win-x64\Debug\NumericsSharp.Mkl.Native.dll"
              Link="NumericsSharp.Mkl.Native.dll"
              TargetPath="NumericsSharp.Mkl.Native.dll"
              CopyToOutputDirectory="PreserveNewest"
