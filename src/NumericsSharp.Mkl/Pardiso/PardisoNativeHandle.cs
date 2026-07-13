@@ -1,18 +1,21 @@
 ﻿using System.Runtime.InteropServices;
-using NumericsSharp.Mkl.Pardiso;
+using NumericsSharp.Mkl.Interop;
 
-namespace NumericsSharp.Mkl.Native;
+namespace NumericsSharp.Mkl.Pardiso;
 
 internal sealed partial class PardisoNativeHandle : SafeHandle
 {
-    private PardisoNativeHandle() : base(nint.Zero, ownsHandle: true) { }
-
     private PardisoNativeHandle(nint handle) : base(nint.Zero, ownsHandle: true)
     {
         this.SetHandle(handle);
     }
 
     public override bool IsInvalid => this.handle == nint.Zero;
+
+    protected override bool ReleaseHandle()
+    {
+        return NumericsSharp_PardisoDestroy(this.handle) == MklNativeStatus.Success;
+    }
 
     internal static PardisoNativeHandle Create()
     {
@@ -23,33 +26,53 @@ internal sealed partial class PardisoNativeHandle : SafeHandle
     internal static MklNativeStatus SetThreadCount(int threadCount)
         => NumericsSharp_MklSetThreadCount(threadCount);
 
-    internal unsafe MklNativeStatus GetLastError(int* phase, int* error)
-        => NumericsSharp_PardisoGetLastError(this, phase, error);
-
-    internal unsafe MklNativeStatus Analyze(
-        int order,
-        int nonZeroCount,
-        int* rowPointers,
-        int* columns,
-        PardisoMatrixType matrixType)
-        => NumericsSharp_PardisoAnalyze(this, order, nonZeroCount, rowPointers, columns, matrixType);
-
-    internal unsafe MklNativeStatus Factorize(double* values)
-        => NumericsSharp_PardisoFactorize(this, values);
-
-    internal unsafe MklNativeStatus Solve(
-        double* rightHandSide,
-        double* solution,
-        int rightHandSideCount)
-        => NumericsSharp_PardisoSolve(this, rightHandSide, solution, rightHandSideCount);
-
-    protected override bool ReleaseHandle()
+    internal unsafe MklNativeStatus GetLastError(out int phase, out int error)
     {
-        return NumericsSharp_PardisoDestroy(this.handle) == MklNativeStatus.Success;
+        int nativePhase;
+        int nativeError;
+        var status = NumericsSharp_PardisoGetLastError(this, &nativePhase, &nativeError);
+        phase = nativePhase;
+        error = nativeError;
+        return status;
+    }
+
+    internal unsafe MklNativeStatus Analyze(ReadOnlySpan<int> rowPointers, ReadOnlySpan<int> columns, PardisoMatrixType matrixType)
+    {
+        fixed (int* rowPointersPointer = rowPointers)
+        fixed (int* columnsPointer = columns)
+        {
+            return NumericsSharp_PardisoAnalyze(
+                this,
+                rowPointers.Length - 1,
+                columns.Length,
+                rowPointersPointer,
+                columnsPointer,
+                matrixType);
+        }
+    }
+
+    internal unsafe MklNativeStatus Factorize(ReadOnlySpan<double> values)
+    {
+        fixed (double* valuesPointer = values)
+        {
+            return NumericsSharp_PardisoFactorize(this, valuesPointer);
+        }
+    }
+
+    internal unsafe MklNativeStatus Solve(ReadOnlySpan<double> rightHandSide, Span<double> solution, int rightHandSideCount)
+    {
+        fixed (double* rightHandSidePointer = rightHandSide)
+        fixed (double* solutionPointer = solution)
+        {
+            return NumericsSharp_PardisoSolve(
+                this,
+                rightHandSidePointer,
+                solutionPointer,
+                rightHandSideCount);
+        }
     }
 
     #region Interop
-
     [LibraryImport(InteropInfo.LibraryName, EntryPoint = "NumericsSharp_PardisoCreate")]
     private static partial MklNativeStatus NumericsSharp_PardisoCreate(out nint handle);
 
@@ -85,6 +108,5 @@ internal sealed partial class PardisoNativeHandle : SafeHandle
         double* rightHandSide,
         double* solution,
         int rightHandSideCount);
-
     #endregion
 }

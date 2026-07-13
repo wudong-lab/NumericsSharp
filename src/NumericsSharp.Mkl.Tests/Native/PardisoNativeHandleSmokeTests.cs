@@ -1,9 +1,10 @@
-using NumericsSharp.Mkl.Native;
+﻿using NumericsSharp.Mkl.Interop;
 using NumericsSharp.Mkl.Pardiso;
+using PardisoNativeHandle = NumericsSharp.Mkl.Pardiso.PardisoNativeHandle;
 
 namespace NumericsSharp.Mkl.Tests.Native;
 
-public sealed unsafe class PardisoNativeHandleSmokeTests
+public sealed class PardisoNativeHandleSmokeTests
 {
     [Fact]
     public void CreateDestroyAndAnalyze_CanCallNativeDllWhenBuilt()
@@ -14,12 +15,10 @@ public sealed unsafe class PardisoNativeHandleSmokeTests
         }
 
         using var handle = PardisoNativeHandle.Create();
-        var rowPointers = stackalloc[] { 1, 2, 3 };
-        var columns = stackalloc[] { 1, 2 };
+        Span<int> rowPointers = stackalloc[] { 1, 2, 3 };
+        Span<int> columns = stackalloc[] { 1, 2 };
 
         var analyzeStatus = handle.Analyze(
-            order: 2,
-            nonZeroCount: 2,
             rowPointers,
             columns,
             PardisoMatrixType.RealSymmetricPositiveDefinite);
@@ -38,7 +37,7 @@ public sealed unsafe class PardisoNativeHandleSmokeTests
         using var handle = PardisoNativeHandle.Create();
         int phase;
         int error;
-        var status = handle.GetLastError(&phase, &error);
+        var status = handle.GetLastError(out phase, out error);
 
         Assert.Equal(MklNativeStatus.Success, status);
         Assert.Equal(0, phase);

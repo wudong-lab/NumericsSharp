@@ -1,10 +1,9 @@
-using NumericsSharp.Core.LinearAlgebra;
+﻿using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Core.Threading;
-using NumericsSharp.Mkl;
-using NumericsSharp.Mkl.Native;
 using NumericsSharp.Mkl.Tests.Native;
 using NumericsSharp.Mkl.Pardiso;
 using NumericsSharp.Solvers.LinearSolvers;
+using NumericsSharp.Mkl.Interop;
 
 namespace NumericsSharp.Mkl.Tests.Pardiso;
 

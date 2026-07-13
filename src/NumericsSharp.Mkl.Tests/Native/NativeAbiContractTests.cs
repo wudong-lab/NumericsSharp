@@ -1,4 +1,4 @@
-using NumericsSharp.Mkl.Native;
+﻿using NumericsSharp.Mkl.Interop;
 using NumericsSharp.Mkl.Pardiso;
 
 namespace NumericsSharp.Mkl.Tests.Native;

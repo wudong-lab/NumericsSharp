@@ -1,4 +1,4 @@
-﻿namespace NumericsSharp.Mkl.Native;
+﻿namespace NumericsSharp.Mkl.Interop;
 
 internal static class InteropInfo
 {

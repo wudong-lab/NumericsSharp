@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using NumericsSharp.Mkl.Native;
+using NumericsSharp.Mkl.Interop;
 
 namespace NumericsSharp.Mkl.Tests.Native;
 

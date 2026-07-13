@@ -22,10 +22,6 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="Exists('$(NativeBuildOutputPath)\$(MklNativeDllName)')">
-		<Content Include="$(NativeBuildOutputPath)\$(MklNativeDllName)"
-		         Link="$(MklNativeDllName)"
-		         TargetPath="$(MklNativeDllName)"
-		         CopyToOutputDirectory="PreserveNewest"
-		         CopyToPublishDirectory="PreserveNewest" />
+		<Content Include="$(NativeBuildOutputPath)\$(MklNativeDllName)" Link="$(MklNativeDllName)" TargetPath="$(MklNativeDllName)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>
