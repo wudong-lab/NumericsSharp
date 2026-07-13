@@ -28,13 +28,13 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
         this._matrix = PardisoCsrMatrix.FromCsr(matrix, this.Options.MatrixType);
 
-        this._handle ??= CreateNativeHandle();
+        this._handle ??= PardisoNativeHandle.Create();
         this.ApplyThreadingOptions();
 
         fixed (int* rowPointers = this._matrix.RowPointers)
         fixed (int* columns = this._matrix.Columns)
         {
-            var status = PardisoNativeMethods.Analyze(this._handle, this._matrix.Order, this._matrix.NonZeroCount,
+            var status = this._handle.Analyze(this._matrix.Order, this._matrix.NonZeroCount,
                 rowPointers, columns, this.Options.MatrixType);
 
             MklBackendException.ThrowIfFailed(
@@ -71,7 +71,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
         fixed (double* values = this._matrix.Values)
         {
-            var status = PardisoNativeMethods.Factorize(this._handle, values);
+            var status = this._handle.Factorize(values);
             this.ThrowIfPardisoFailed(status, operation: "PARDISO factorize", expectedPhase: 12);
         }
 
@@ -130,7 +130,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         fixed (double* rightHandSidePointer = rightHandSide)
         fixed (double* solutionPointer = solution)
         {
-            var status = PardisoNativeMethods.Solve(this._handle, rightHandSidePointer, solutionPointer, rightHandSideCount);
+            var status = this._handle.Solve(rightHandSidePointer, solutionPointer, rightHandSideCount);
             this.ThrowIfPardisoFailed(status, operation: "PARDISO solve", expectedPhase: 33);
         }
 
@@ -147,19 +147,13 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
         this.IsFactorized = false;
     }
 
-    private static PardisoNativeHandle CreateNativeHandle()
-    {
-        MklBackendException.ThrowIfFailed(PardisoNativeMethods.Create(out var handle));
-        return new PardisoNativeHandle(handle, ownsHandle: true);
-    }
-
     private void ApplyThreadingOptions()
     {
         var nativeThreadCount = this.Options.Threading.Mode == ParallelMode.ManagedOuterParallel
             ? 1
             : this.Options.Threading.NativeThreadCount;
 
-        var status = PardisoNativeMethods.SetThreadCount(nativeThreadCount);
+        var status = PardisoNativeHandle.SetThreadCount(nativeThreadCount);
         MklBackendException.ThrowIfFailed(status, operation: "MKL set thread count",
             phase: null, matrixType: null, order: null, nonZeroCount: null, pardisoErrorCode: null);
     }
@@ -189,7 +183,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
     {
         var phaseBuffer = stackalloc int[1];
         var errorBuffer = stackalloc int[1];
-        var status = PardisoNativeMethods.GetLastError(handle, phaseBuffer, errorBuffer);
+        var status = handle.GetLastError(phaseBuffer, errorBuffer);
 
         phase = phaseBuffer[0];
         error = errorBuffer[0];

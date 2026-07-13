@@ -3,7 +3,7 @@ using NumericsSharp.Mkl.Pardiso;
 
 namespace NumericsSharp.Mkl.Tests.Native;
 
-public sealed unsafe class PardisoNativeMethodsSmokeTests
+public sealed unsafe class PardisoNativeHandleSmokeTests
 {
     [Fact]
     public void CreateDestroyAndAnalyze_CanCallNativeDllWhenBuilt()
@@ -13,16 +13,11 @@ public sealed unsafe class PardisoNativeMethodsSmokeTests
             return;
         }
 
-        var createStatus = PardisoNativeMethods.Create(out var rawHandle);
-        Assert.Equal(MklNativeStatus.Success, createStatus);
-        Assert.NotEqual(IntPtr.Zero, rawHandle);
-
-        using var handle = new PardisoNativeHandle(rawHandle, ownsHandle: true);
+        using var handle = PardisoNativeHandle.Create();
         var rowPointers = stackalloc[] { 1, 2, 3 };
         var columns = stackalloc[] { 1, 2 };
 
-        var analyzeStatus = PardisoNativeMethods.Analyze(
-            handle,
+        var analyzeStatus = handle.Analyze(
             order: 2,
             nonZeroCount: 2,
             rowPointers,
@@ -40,13 +35,10 @@ public sealed unsafe class PardisoNativeMethodsSmokeTests
             return;
         }
 
-        var createStatus = PardisoNativeMethods.Create(out var rawHandle);
-        Assert.Equal(MklNativeStatus.Success, createStatus);
-
-        using var handle = new PardisoNativeHandle(rawHandle, ownsHandle: true);
+        using var handle = PardisoNativeHandle.Create();
         int phase;
         int error;
-        var status = PardisoNativeMethods.GetLastError(handle, &phase, &error);
+        var status = handle.GetLastError(&phase, &error);
 
         Assert.Equal(MklNativeStatus.Success, status);
         Assert.Equal(0, phase);
@@ -61,7 +53,7 @@ public sealed unsafe class PardisoNativeMethodsSmokeTests
             return;
         }
 
-        var status = PardisoNativeMethods.SetThreadCount(0);
+        var status = PardisoNativeHandle.SetThreadCount(0);
 
         Assert.Equal(MklNativeStatus.InvalidArgument, status);
     }
