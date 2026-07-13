@@ -21,11 +21,8 @@ public sealed class CsrMatrixPattern
     {
         ArgumentNullException.ThrowIfNull(matrix);
 
-        return new CsrMatrixPattern(
-            matrix.RowCount,
-            matrix.ColumnCount,
-            (int[])matrix.RowOffsets.Clone(),
-            (int[])matrix.ColumnIndices.Clone());
+        return new CsrMatrixPattern(matrix.RowCount, matrix.ColumnCount,
+            (int[])matrix.RowOffsets.Clone(), (int[])matrix.ColumnIndices.Clone());
     }
 
     public double[] CreateValueBuffer() => new double[this.NonZeroCount];

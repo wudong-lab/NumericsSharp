@@ -124,13 +124,8 @@ public sealed class SparseMatrixBuilder
             throw new ArgumentOutOfRangeException(nameof(column));
     }
 
-    private static void AddMergedEntry(
-        int row,
-        int column,
-        double value,
-        int[] rowCounts,
-        List<int> columns,
-        List<double> values)
+    private static void AddMergedEntry(int row, int column, double value,
+        int[] rowCounts, List<int> columns, List<double> values)
     {
         if (value == 0.0) return;
 

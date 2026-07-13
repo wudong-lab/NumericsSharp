@@ -17,9 +17,7 @@ public sealed class Vector
     }
 
     public int Count => this._values.Length;
-
     public Span<double> Values => this._values;
-
     public ReadOnlySpan<double> ReadOnlyValues => this._values;
 
     public double this[int index]
@@ -33,9 +31,7 @@ public sealed class Vector
     public static Vector FromArray(ReadOnlySpan<double> values)
     {
         if (values.IsEmpty)
-        {
             throw new ArgumentException("Vector must contain at least one value.", nameof(values));
-        }
 
         return new Vector(values.ToArray());
     }
