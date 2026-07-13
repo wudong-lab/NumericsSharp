@@ -1,4 +1,4 @@
-namespace NumericsSharp.Core.LinearAlgebra;
+﻿namespace NumericsSharp.Core.LinearAlgebra;
 
 public static class LinearSystemResidual
 {
@@ -7,14 +7,10 @@ public static class LinearSystemResidual
         ArgumentNullException.ThrowIfNull(matrix);
 
         if (solution.Length != matrix.ColumnCount)
-        {
             throw new ArgumentException("Solution length must equal matrix column count.", nameof(solution));
-        }
 
         if (rightHandSide.Length != matrix.RowCount)
-        {
             throw new ArgumentException("Right hand side length must equal matrix row count.", nameof(rightHandSide));
-        }
 
         var matrixTimesSolution = new double[matrix.RowCount];
         matrix.Multiply(solution, matrixTimesSolution);

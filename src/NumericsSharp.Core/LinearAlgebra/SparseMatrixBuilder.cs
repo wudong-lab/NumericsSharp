@@ -16,19 +16,14 @@ public sealed class SparseMatrixBuilder
     }
 
     public int RowCount { get; }
-
     public int ColumnCount { get; }
-
     public int EntryCount => this._entries.Count;
 
     public void Add(int row, int column, double value)
     {
         this.ThrowIfIndexOutOfRange(row, column);
 
-        if (value == 0.0)
-        {
-            return;
-        }
+        if (value == 0.0) return;
 
         this._entries.Add(new Entry(row, column, value));
     }
@@ -44,15 +39,12 @@ public sealed class SparseMatrixBuilder
     }
 
     public void AddSubmatrix(ReadOnlySpan<int> indices, ReadOnlySpan<double> values)
-        =>
-            this.AddSubmatrix(indices, indices, values);
+        => this.AddSubmatrix(indices, indices, values);
 
     public void AddSubmatrix(ReadOnlySpan<int> rowIndices, ReadOnlySpan<int> columnIndices, ReadOnlySpan<double> values)
     {
         if (values.Length != rowIndices.Length * columnIndices.Length)
-        {
             throw new ArgumentException("Submatrix value count must equal rowIndices.Length * columnIndices.Length.", nameof(values));
-        }
 
         for (var localRow = 0; localRow < rowIndices.Length; localRow++)
         {
@@ -68,9 +60,7 @@ public sealed class SparseMatrixBuilder
     public void AddSymmetricSubmatrix(ReadOnlySpan<int> indices, ReadOnlySpan<double> values)
     {
         if (values.Length != indices.Length * indices.Length)
-        {
             throw new ArgumentException("Submatrix value count must equal indices.Length squared.", nameof(values));
-        }
 
         for (var localRow = 0; localRow < indices.Length; localRow++)
         {
@@ -128,14 +118,10 @@ public sealed class SparseMatrixBuilder
     private void ThrowIfIndexOutOfRange(int row, int column)
     {
         if ((uint)row >= (uint)this.RowCount)
-        {
             throw new ArgumentOutOfRangeException(nameof(row));
-        }
 
         if ((uint)column >= (uint)this.ColumnCount)
-        {
             throw new ArgumentOutOfRangeException(nameof(column));
-        }
     }
 
     private static void AddMergedEntry(
@@ -146,10 +132,7 @@ public sealed class SparseMatrixBuilder
         List<int> columns,
         List<double> values)
     {
-        if (value == 0.0)
-        {
-            return;
-        }
+        if (value == 0.0) return;
 
         rowCounts[row]++;
         columns.Add(column);

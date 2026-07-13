@@ -11,13 +11,10 @@ public sealed class CsrMatrixPattern
     }
 
     public int RowCount { get; }
-
     public int ColumnCount { get; }
-
     public int NonZeroCount => this.ColumnIndices.Length;
 
     public int[] RowOffsets { get; }
-
     public int[] ColumnIndices { get; }
 
     public static CsrMatrixPattern FromCsr(CsrMatrix matrix)
@@ -36,9 +33,7 @@ public sealed class CsrMatrixPattern
     public CsrMatrix ToCsr(ReadOnlySpan<double> values)
     {
         if (values.Length != this.NonZeroCount)
-        {
             throw new ArgumentException("Value count must equal pattern nonzero count.", nameof(values));
-        }
 
         return new CsrMatrix(this.RowCount, this.ColumnCount,
             (int[])this.RowOffsets.Clone(),
@@ -55,9 +50,7 @@ public sealed class CsrMatrixPattern
         var offset = Array.BinarySearch(this.ColumnIndices, start, count, column);
 
         if (offset < 0)
-        {
             throw new ArgumentException("CSR pattern does not contain the requested matrix entry.");
-        }
 
         return offset;
     }
@@ -65,13 +58,9 @@ public sealed class CsrMatrixPattern
     private void ThrowIfIndexOutOfRange(int row, int column)
     {
         if ((uint)row >= (uint)this.RowCount)
-        {
             throw new ArgumentOutOfRangeException(nameof(row));
-        }
 
         if ((uint)column >= (uint)this.ColumnCount)
-        {
             throw new ArgumentOutOfRangeException(nameof(column));
-        }
     }
 }
