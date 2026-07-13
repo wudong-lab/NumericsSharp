@@ -17,13 +17,14 @@
 	</ItemGroup>
 
 	<PropertyGroup>
+		<MklNativeDllName>NumericsSharp.Mkl.Native.dll</MklNativeDllName>
 		<NativeBuildOutputPath>..\NumericsSharp.Mkl.Native\build\$(NativeBuildPlatform)\$(Configuration)</NativeBuildOutputPath>
 	</PropertyGroup>
 
-	<ItemGroup Condition="Exists('$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll')">
-		<Content Include="$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll"
-		         Link="NumericsSharp.Mkl.Native.dll"
-		         TargetPath="NumericsSharp.Mkl.Native.dll"
+	<ItemGroup Condition="Exists('$(NativeBuildOutputPath)\$(MklNativeDllName)')">
+		<Content Include="$(NativeBuildOutputPath)\$(MklNativeDllName)"
+		         Link="$(MklNativeDllName)"
+		         TargetPath="$(MklNativeDllName)"
 		         CopyToOutputDirectory="PreserveNewest"
 		         CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
