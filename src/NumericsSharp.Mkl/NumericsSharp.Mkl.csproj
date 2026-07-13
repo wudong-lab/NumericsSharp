@@ -1,29 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NativeBuildPlatform>win-x64</NativeBuildPlatform>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\NumericsSharp.Core\NumericsSharp.Core.csproj" />
-    <ProjectReference Include="..\NumericsSharp.Solvers\NumericsSharp.Solvers.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="NumericsSharp.Mkl.Tests" />
+	</ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NativeBuildPlatform>win-x64</NativeBuildPlatform>
-    <NativeBuildOutputPath>..\NumericsSharp.Mkl.Native\build\$(NativeBuildPlatform)\$(Configuration)</NativeBuildOutputPath>
-  </PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\NumericsSharp.Core\NumericsSharp.Core.csproj" />
+		<ProjectReference Include="..\NumericsSharp.Solvers\NumericsSharp.Solvers.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="NumericsSharp.Mkl.Tests" />
-  </ItemGroup>
+	<PropertyGroup>
+		<NativeBuildOutputPath>..\NumericsSharp.Mkl.Native\build\$(NativeBuildPlatform)\$(Configuration)</NativeBuildOutputPath>
+	</PropertyGroup>
 
-  <ItemGroup Condition="Exists('$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll')">
-    <Content Include="$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll"
-             Link="NumericsSharp.Mkl.Native.dll"
-             TargetPath="NumericsSharp.Mkl.Native.dll"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
-
+	<ItemGroup Condition="Exists('$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll')">
+		<Content Include="$(NativeBuildOutputPath)\NumericsSharp.Mkl.Native.dll"
+		         Link="NumericsSharp.Mkl.Native.dll"
+		         TargetPath="NumericsSharp.Mkl.Native.dll"
+		         CopyToOutputDirectory="PreserveNewest"
+		         CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
 </Project>
