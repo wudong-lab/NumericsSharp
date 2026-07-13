@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using NumericsSharp.Mkl.Native;
 
@@ -19,7 +19,7 @@ internal static class NativeLibraryTestResolver
         if (Interlocked.Exchange(ref _isRegistered, 1) == 0)
         {
             NativeLibrary.SetDllImportResolver(
-                typeof(MklNativeConstants).Assembly,
+                typeof(InteropInfo).Assembly,
                 (_, assembly, searchPath) => Resolve(nativeLibraryPath, assembly, searchPath));
         }
 
@@ -33,7 +33,7 @@ internal static class NativeLibraryTestResolver
 
     private static string? TryFindNativeLibraryPath()
     {
-        var outputCandidate = Path.Combine(AppContext.BaseDirectory, $"{MklNativeConstants.LibraryName}.dll");
+        var outputCandidate = Path.Combine(AppContext.BaseDirectory, $"{InteropInfo.LibraryName}.dll");
         if (File.Exists(outputCandidate))
         {
             return outputCandidate;
@@ -52,7 +52,7 @@ internal static class NativeLibraryTestResolver
             "build",
             "win-x64",
             "Debug",
-            $"{MklNativeConstants.LibraryName}.dll");
+            $"{InteropInfo.LibraryName}.dll");
 
         return File.Exists(candidate) ? candidate : null;
     }

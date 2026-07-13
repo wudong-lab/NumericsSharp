@@ -1,4 +1,6 @@
-﻿namespace NumericsSharp.Mkl;
+﻿using NumericsSharp.Mkl.Native;
+
+namespace NumericsSharp.Mkl;
 
 public sealed class MklBackendException : Exception
 {
@@ -44,6 +46,39 @@ public sealed class MklBackendException : Exception
     public int? Order { get; }
     public int? NonZeroCount { get; }
     public int? PardisoErrorCode { get; }
+
+    internal static void ThrowIfFailed(MklNativeStatus status)
+        => ThrowIfFailed(
+            status,
+            operation: null,
+            phase: null,
+            matrixType: null,
+            order: null,
+            nonZeroCount: null,
+            pardisoErrorCode: null);
+
+    internal static void ThrowIfFailed(
+        MklNativeStatus status,
+        string? operation,
+        int? phase,
+        string? matrixType,
+        int? order,
+        int? nonZeroCount,
+        int? pardisoErrorCode)
+    {
+        if (status != MklNativeStatus.Success)
+        {
+            throw new MklBackendException(
+                (int)status,
+                status.ToString(),
+                operation,
+                phase,
+                matrixType,
+                order,
+                nonZeroCount,
+                pardisoErrorCode);
+        }
+    }
 
     private static string CreateMessage(
         int statusCode,

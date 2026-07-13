@@ -37,7 +37,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
             var status = PardisoNativeMethods.Analyze(this._handle, this._matrix.Order, this._matrix.NonZeroCount,
                 rowPointers, columns, this.Options.MatrixType);
 
-            MklNativeException.ThrowIfFailed(
+            MklBackendException.ThrowIfFailed(
                 status,
                 operation: "PARDISO analyze",
                 phase: 11,
@@ -149,7 +149,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
 
     private static PardisoNativeHandle CreateNativeHandle()
     {
-        MklNativeException.ThrowIfFailed(PardisoNativeMethods.Create(out var handle));
+        MklBackendException.ThrowIfFailed(PardisoNativeMethods.Create(out var handle));
         return new PardisoNativeHandle(handle, ownsHandle: true);
     }
 
@@ -160,7 +160,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
             : this.Options.Threading.NativeThreadCount;
 
         var status = PardisoNativeMethods.SetThreadCount(nativeThreadCount);
-        MklNativeException.ThrowIfFailed(status, operation: "MKL set thread count",
+        MklBackendException.ThrowIfFailed(status, operation: "MKL set thread count",
             phase: null, matrixType: null, order: null, nonZeroCount: null, pardisoErrorCode: null);
     }
 
@@ -181,7 +181,7 @@ public sealed unsafe class PardisoSolver : IDirectSparseSolver
             }
         }
 
-        MklNativeException.ThrowIfFailed(status, operation, phase, this.Options.MatrixType.ToString(), 
+        MklBackendException.ThrowIfFailed(status, operation, phase, this.Options.MatrixType.ToString(),
             this._matrix?.Order, this._matrix?.NonZeroCount, pardisoErrorCode);
     }
 
