@@ -1,9 +1,19 @@
 ﻿namespace NumericsSharp.Core.LinearAlgebra;
 
+/// <summary>
+/// 以条目追加方式构造稀疏矩阵，并在转换时生成 CSR 表示。
+/// </summary>
 public sealed class SparseMatrixBuilder
 {
     private readonly List<Entry> _entries;
 
+    /// <summary>
+    /// 创建稀疏矩阵构造器。
+    /// </summary>
+    /// <param name="rowCount">矩阵的行数。</param>
+    /// <param name="columnCount">矩阵的列数。</param>
+    /// <param name="capacity">内部条目列表的初始容量。</param>
+    /// <exception cref="ArgumentOutOfRangeException">行数、列数或容量为负数或零（行数和列数）时抛出。</exception>
     public SparseMatrixBuilder(int rowCount, int columnCount, int capacity = 0)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(rowCount, 1);
@@ -15,10 +25,28 @@ public sealed class SparseMatrixBuilder
         this._entries = capacity > 0 ? new List<Entry>(capacity) : [];
     }
 
+    /// <summary>
+    /// 获取矩阵的行数。
+    /// </summary>
     public int RowCount { get; }
+
+    /// <summary>
+    /// 获取矩阵的列数。
+    /// </summary>
     public int ColumnCount { get; }
+
+    /// <summary>
+    /// 获取当前已追加的条目数，包括尚未合并的重复位置。
+    /// </summary>
     public int EntryCount => this._entries.Count;
 
+    /// <summary>
+    /// 追加一个矩阵条目。数值为零的条目会被忽略。
+    /// </summary>
+    /// <param name="row">条目行索引。</param>
+    /// <param name="column">条目列索引。</param>
+    /// <param name="value">条目值。</param>
+    /// <exception cref="ArgumentOutOfRangeException">行索引或列索引超出矩阵范围时抛出。</exception>
     public void Add(int row, int column, double value)
     {
         this.ThrowIfIndexOutOfRange(row, column);
@@ -28,6 +56,13 @@ public sealed class SparseMatrixBuilder
         this._entries.Add(new Entry(row, column, value));
     }
 
+    /// <summary>
+    /// 追加一个对称条目；当行列索引不同时，同时追加其转置位置。
+    /// </summary>
+    /// <param name="row">条目行索引。</param>
+    /// <param name="column">条目列索引。</param>
+    /// <param name="value">条目值。</param>
+    /// <exception cref="ArgumentOutOfRangeException">行索引或列索引超出矩阵范围时抛出。</exception>
     public void AddSymmetric(int row, int column, double value)
     {
         this.Add(row, column, value);
@@ -38,9 +73,24 @@ public sealed class SparseMatrixBuilder
         }
     }
 
+    /// <summary>
+    /// 追加一个使用同一索引集合作为行和列索引的局部矩阵。
+    /// </summary>
+    /// <param name="indices">局部矩阵对应的全局行列索引。</param>
+    /// <param name="values">按行优先顺序排列的局部矩阵值。</param>
+    /// <exception cref="ArgumentException">值数量不等于索引数量的平方时抛出。</exception>
+    /// <exception cref="ArgumentOutOfRangeException">索引超出矩阵范围时抛出。</exception>
     public void AddSubmatrix(ReadOnlySpan<int> indices, ReadOnlySpan<double> values)
         => this.AddSubmatrix(indices, indices, values);
 
+    /// <summary>
+    /// 追加一个局部矩阵。
+    /// </summary>
+    /// <param name="rowIndices">局部矩阵的全局行索引。</param>
+    /// <param name="columnIndices">局部矩阵的全局列索引。</param>
+    /// <param name="values">按行优先顺序排列的局部矩阵值。</param>
+    /// <exception cref="ArgumentException">值数量不等于行索引数量与列索引数量的乘积时抛出。</exception>
+    /// <exception cref="ArgumentOutOfRangeException">索引超出矩阵范围时抛出。</exception>
     public void AddSubmatrix(ReadOnlySpan<int> rowIndices, ReadOnlySpan<int> columnIndices, ReadOnlySpan<double> values)
     {
         if (values.Length != rowIndices.Length * columnIndices.Length)
@@ -57,6 +107,13 @@ public sealed class SparseMatrixBuilder
         }
     }
 
+    /// <summary>
+    /// 追加一个对称局部矩阵，只读取并展开其上三角部分。
+    /// </summary>
+    /// <param name="indices">局部矩阵对应的全局行列索引。</param>
+    /// <param name="values">按行优先顺序排列的完整对称局部矩阵值。</param>
+    /// <exception cref="ArgumentException">值数量不等于索引数量的平方时抛出。</exception>
+    /// <exception cref="ArgumentOutOfRangeException">索引超出矩阵范围时抛出。</exception>
     public void AddSymmetricSubmatrix(ReadOnlySpan<int> indices, ReadOnlySpan<double> values)
     {
         if (values.Length != indices.Length * indices.Length)
@@ -73,6 +130,10 @@ public sealed class SparseMatrixBuilder
         }
     }
 
+    /// <summary>
+    /// 将已追加的条目合并并转换为 CSR 矩阵。
+    /// </summary>
+    /// <returns>CSR 格式的矩阵。相同位置的重复条目会求和，合并后为零的条目不会存储。</returns>
     public CsrMatrix ToCsr()
     {
         if (this._entries.Count == 0)
