@@ -142,7 +142,7 @@ public sealed class SparseMatrixBuilder
         }
 
         var entries = this._entries.ToArray();
-        Array.Sort(entries, EntryComparer.Instance);
+        Array.Sort(entries);
 
         var rowCounts = new int[this.RowCount];
         var columns = new List<int>(entries.Length);
@@ -185,6 +185,16 @@ public sealed class SparseMatrixBuilder
             throw new ArgumentOutOfRangeException(nameof(column));
     }
 
+    /// <summary>
+    /// 将合并后的矩阵条目追加到 CSR 转换所需的中间缓冲区。
+    /// </summary>
+    /// <param name="row">条目行索引。</param>
+    /// <param name="column">条目列索引。</param>
+    /// <param name="value">合并后的条目值。</param>
+    /// <param name="rowCounts">记录每一行已追加条目数量的数组。</param>
+    /// <param name="columns">存储条目列索引的列表。</param>
+    /// <param name="values">存储条目值的列表。</param>
+    /// <remarks>值为零的条目不会被追加。</remarks>
     private static void AddMergedEntry(int row, int column, double value,
         int[] rowCounts, List<int> columns, List<double> values)
     {
@@ -195,16 +205,9 @@ public sealed class SparseMatrixBuilder
         values.Add(value);
     }
 
-    private readonly record struct Entry(int Row, int Column, double Value);
-
-    private sealed class EntryComparer : IComparer<Entry>
+    private readonly record struct Entry(int Row, int Column, double Value) : IComparable<Entry>
     {
-        public static readonly EntryComparer Instance = new();
-
-        public int Compare(Entry x, Entry y)
-        {
-            var rowComparison = x.Row.CompareTo(y.Row);
-            return rowComparison != 0 ? rowComparison : x.Column.CompareTo(y.Column);
-        }
+        public int CompareTo(Entry other)
+            => (this.Row, this.Column).CompareTo((other.Row, other.Column));
     }
 }
