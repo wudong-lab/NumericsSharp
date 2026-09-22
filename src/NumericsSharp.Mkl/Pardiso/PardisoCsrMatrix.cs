@@ -4,8 +4,6 @@ namespace NumericsSharp.Mkl.Pardiso;
 
 internal sealed class PardisoCsrMatrix
 {
-    private const int OneBasedIndexOffset = 1;
-
     private PardisoCsrMatrix(int order, int[] rowPointers, int[] columns, double[] values)
     {
         this.Order = order;
@@ -34,19 +32,11 @@ internal sealed class PardisoCsrMatrix
 
     private static PardisoCsrMatrix FromFullCsr(CsrMatrix matrix)
     {
-        var rowPointers = new int[matrix.RowOffsets.Length];
-        for (var i = 0; i < rowPointers.Length; i++)
-        {
-            rowPointers[i] = matrix.RowOffsets[i] + OneBasedIndexOffset;
-        }
-
-        var columns = new int[matrix.ColumnIndices.Length];
-        for (var i = 0; i < columns.Length; i++)
-        {
-            columns[i] = matrix.ColumnIndices[i] + OneBasedIndexOffset;
-        }
-
-        return new PardisoCsrMatrix(matrix.RowCount, rowPointers, columns, (double[])matrix.Values.Clone());
+        return new PardisoCsrMatrix(
+            matrix.RowCount,
+            matrix.RowOffsets,
+            matrix.ColumnIndices,
+            matrix.Values);
     }
 
     private static PardisoCsrMatrix FromUpperTriangleCsr(CsrMatrix matrix)
@@ -55,7 +45,7 @@ internal sealed class PardisoCsrMatrix
         var columns = new List<int>(matrix.NonZeroCount);
         var values = new List<double>(matrix.NonZeroCount);
 
-        rowPointers[0] = OneBasedIndexOffset;
+        rowPointers[0] = 0;
 
         for (var row = 0; row < matrix.RowCount; row++)
         {
@@ -67,11 +57,11 @@ internal sealed class PardisoCsrMatrix
                 var column = matrix.ColumnIndices[index];
                 if (column < row) continue;
 
-                columns.Add(column + OneBasedIndexOffset);
+                columns.Add(column);
                 values.Add(matrix.Values[index]);
             }
 
-            rowPointers[row + 1] = columns.Count + OneBasedIndexOffset;
+            rowPointers[row + 1] = columns.Count;
         }
 
         return new PardisoCsrMatrix(matrix.RowCount, rowPointers, columns.ToArray(), values.ToArray());

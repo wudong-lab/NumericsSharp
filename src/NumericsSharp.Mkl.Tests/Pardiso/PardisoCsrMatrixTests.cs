@@ -6,7 +6,7 @@ namespace NumericsSharp.Mkl.Tests.Pardiso;
 public sealed class PardisoCsrMatrixTests
 {
     [Fact]
-    public void FromCsr_ConvertsZeroBasedCsrToOneBasedPardisoArrays()
+    public void FromCsr_PreservesZeroBasedCsrArrays()
     {
         var builder = new SparseMatrixBuilder(3, 3);
         builder.Add(0, 0, 2.0);
@@ -17,8 +17,8 @@ public sealed class PardisoCsrMatrixTests
 
         Assert.Equal(3, matrix.Order);
         Assert.Equal(3, matrix.NonZeroCount);
-        Assert.Equal([1, 3, 3, 4], matrix.RowPointers);
-        Assert.Equal([1, 3, 2], matrix.Columns);
+        Assert.Equal([0, 2, 2, 3], matrix.RowPointers);
+        Assert.Equal([0, 2, 1], matrix.Columns);
         Assert.Equal([2.0, -1.0, 4.0], matrix.Values);
     }
 
@@ -39,8 +39,8 @@ public sealed class PardisoCsrMatrixTests
 
         Assert.Equal(3, matrix.Order);
         Assert.Equal(6, matrix.NonZeroCount);
-        Assert.Equal([1, 4, 6, 7], matrix.RowPointers);
-        Assert.Equal([1, 2, 3, 2, 3, 3], matrix.Columns);
+        Assert.Equal([0, 3, 5, 6], matrix.RowPointers);
+        Assert.Equal([0, 1, 2, 1, 2, 2], matrix.Columns);
         Assert.Equal([2.0, -1.0, 0.5, 3.0, 4.0, 5.0], matrix.Values);
     }
 }

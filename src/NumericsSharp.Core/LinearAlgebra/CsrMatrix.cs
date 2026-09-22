@@ -17,46 +17,49 @@ public sealed class CsrMatrix : ILinearOperator
     /// <exception cref="ArgumentException">CSR 数组的长度或行偏移不满足格式约束时抛出。</exception>
     public CsrMatrix(int rowCount, int columnCount, int[] rowOffsets, int[] columnIndices, double[] values)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(rowCount, 1);
-        ArgumentOutOfRangeException.ThrowIfLessThan(columnCount, 1);
+        this.Pattern = CsrMatrixPattern.Create(rowCount, columnCount, rowOffsets, columnIndices);
+        ArgumentNullException.ThrowIfNull(values);
 
-        if (rowOffsets.Length != rowCount + 1)
-            throw new ArgumentException("CSR row offset count must equal rowCount + 1.", nameof(rowOffsets));
+        if (values.Length != this.Pattern.NonZeroCount)
+            throw new ArgumentException("CSR column index count must equal value count.", nameof(values));
 
-        if (columnIndices.Length != values.Length)
-            throw new ArgumentException("CSR column index count must equal value count.", nameof(columnIndices));
-
-        if (rowOffsets[0] != 0 || rowOffsets[^1] != values.Length)
-            throw new ArgumentException("CSR row offsets are inconsistent with value count.", nameof(rowOffsets));
-
-        for (var i = 0; i < rowOffsets.Length - 1; i++)
-        {
-            if (rowOffsets[i] > rowOffsets[i + 1])
-                throw new ArgumentException("CSR row offsets must be nondecreasing.", nameof(rowOffsets));
-        }
-
-        foreach (var columnIndex in columnIndices)
-        {
-            if ((uint)columnIndex >= (uint)columnCount)
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), "CSR column index is out of range.");
-        }
-
-        this.RowCount = rowCount;
-        this.ColumnCount = columnCount;
-        this.RowOffsets = rowOffsets;
-        this.ColumnIndices = columnIndices;
         this.Values = values;
     }
 
     /// <summary>
+    /// 使用已有 CSR 结构和数值创建稀疏矩阵。矩阵与结构共享同一组 CSR 结构数组。
+    /// </summary>
+    /// <param name="pattern">CSR 稀疏结构。</param>
+    /// <param name="values">按 CSR 条目顺序排列的数值。</param>
+    /// <remarks>矩阵与 <paramref name="pattern"/> 共享结构数组；构造后不得修改该结构。</remarks>
+    /// <exception cref="ArgumentNullException">结构或数值数组为 <see langword="null"/> 时抛出。</exception>
+    /// <exception cref="ArgumentException">数值数量与结构中的条目数不匹配时抛出。</exception>
+    public CsrMatrix(CsrMatrixPattern pattern, double[] values)
+    {
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(values);
+
+        if (values.Length != pattern.NonZeroCount)
+            throw new ArgumentException("Value count must equal pattern nonzero count.", nameof(values));
+
+        this.Pattern = pattern;
+        this.Values = values;
+    }
+
+    /// <summary>
+    /// 获取当前矩阵的 CSR 稀疏结构。
+    /// </summary>
+    public CsrMatrixPattern Pattern { get; }
+
+    /// <summary>
     /// 获取矩阵的行数。
     /// </summary>
-    public int RowCount { get; }
+    public int RowCount => this.Pattern.RowCount;
 
     /// <summary>
     /// 获取矩阵的列数。
     /// </summary>
-    public int ColumnCount { get; }
+    public int ColumnCount => this.Pattern.ColumnCount;
 
     /// <summary>
     /// 获取矩阵中存储的非零条目数。
@@ -66,12 +69,12 @@ public sealed class CsrMatrix : ILinearOperator
     /// <summary>
     /// 获取 CSR 行偏移数组。
     /// </summary>
-    public int[] RowOffsets { get; }
+    public int[] RowOffsets => this.Pattern.RowOffsets;
 
     /// <summary>
     /// 获取 CSR 列索引数组。
     /// </summary>
-    public int[] ColumnIndices { get; }
+    public int[] ColumnIndices => this.Pattern.ColumnIndices;
 
     /// <summary>
     /// 获取 CSR 数值数组。

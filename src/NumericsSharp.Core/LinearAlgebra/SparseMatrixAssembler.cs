@@ -11,6 +11,7 @@ public sealed class SparseMatrixAssembler
     /// 创建稀疏矩阵组装器。
     /// </summary>
     /// <param name="pattern">要填充的 CSR 矩阵结构。</param>
+    /// <remarks>组装器只修改自己的数值缓冲区，与 <paramref name="pattern"/> 共享结构数组；构造后不得修改该结构。</remarks>
     /// <exception cref="ArgumentNullException"><paramref name="pattern"/> 为 <see langword="null"/> 时抛出。</exception>
     public SparseMatrixAssembler(CsrMatrixPattern pattern)
     {
@@ -123,5 +124,5 @@ public sealed class SparseMatrixAssembler
     /// 根据当前累加结果创建 CSR 矩阵。
     /// </summary>
     /// <returns>包含当前结构和累加数值的新 CSR 矩阵。</returns>
-    public CsrMatrix ToCsr() => this.Pattern.ToCsr(this._values);
+    public CsrMatrix ToCsr() => new(this.Pattern, (double[])this._values.Clone());
 }

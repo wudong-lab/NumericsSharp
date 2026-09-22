@@ -1,5 +1,6 @@
 #include "NumericsSharpMklNative.h"
 
+#include <algorithm>
 #include <new>
 #include <vector>
 
@@ -47,7 +48,7 @@ namespace
         handle->iparm[9] = 13; // Pivot perturbation.
         handle->iparm[17] = -1;
         handle->iparm[18] = -1;
-        handle->iparm[34] = 0; // One-based CSR indexing.
+        handle->iparm[34] = 1; // Zero-based CSR indexing.
     }
 
     NsMklNativeStatus call_pardiso(
@@ -124,8 +125,8 @@ namespace
         MKL_INT msglvl = 0;
         MKL_INT error = 0;
         double dummyValue = 0.0;
-        MKL_INT dummyPointer[] = { 1, 1 };
-        MKL_INT dummyColumn[] = { 1 };
+        MKL_INT dummyPointer[] = { 0, 0 };
+        MKL_INT dummyColumn[] = { 0 };
 
         pardiso(
             handle->internalSolverMemory,
@@ -237,8 +238,14 @@ NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoAnalyze(
 #ifdef NUMERICS_SHARP_USE_MKL
     try
     {
-        handle->rowPointers.assign(rowPointers, rowPointers + order + 1);
-        handle->columns.assign(columns, columns + nonZeroCount);
+        handle->rowPointers.resize(static_cast<std::size_t>(order) + 1);
+        std::copy_n(rowPointers, static_cast<std::size_t>(order) + 1, handle->rowPointers.data());
+
+        handle->columns.resize(static_cast<std::size_t>(nonZeroCount));
+        if (nonZeroCount > 0)
+        {
+            std::copy_n(columns, static_cast<std::size_t>(nonZeroCount), handle->columns.data());
+        }
     }
     catch (const std::bad_alloc&)
     {
@@ -265,16 +272,23 @@ NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoFactorize(
 #ifdef NUMERICS_SHARP_USE_MKL
     try
     {
-        handle->values.assign(values, values + handle->nonZeroCount);
+        handle->values.resize(static_cast<std::size_t>(handle->nonZeroCount));
+        std::copy_n(
+            values,
+            static_cast<std::size_t>(handle->nonZeroCount),
+            handle->values.data());
     }
     catch (const std::bad_alloc&)
     {
         return NsMklNativeStatus::OutOfMemory;
     }
 
+    const auto phase = handle->factorized ? 22 : 12;
+    handle->factorized = false;
+
     auto status = call_pardiso(
         handle,
-        12,
+        phase,
         nullptr,
         nullptr,
         nullptr,

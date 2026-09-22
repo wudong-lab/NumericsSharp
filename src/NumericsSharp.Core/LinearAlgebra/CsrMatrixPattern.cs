@@ -31,25 +31,76 @@ public sealed class CsrMatrixPattern
     /// <summary>
     /// 获取 CSR 行偏移数组。
     /// </summary>
+    /// <remarks>
+    /// 数组由当前结构直接持有，并可能与多个矩阵或组装器共享；调用方不得在结构使用期间修改其内容。
+    /// 如需独立的结构副本，请使用 <see cref="Clone"/>。
+    /// </remarks>
     public int[] RowOffsets { get; }
 
     /// <summary>
     /// 获取 CSR 列索引数组。
     /// </summary>
+    /// <remarks>
+    /// 数组由当前结构直接持有，并可能与多个矩阵或组装器共享；调用方不得在结构使用期间修改其内容。
+    /// 如需独立的结构副本，请使用 <see cref="Clone"/>。
+    /// </remarks>
     public int[] ColumnIndices { get; }
 
     /// <summary>
-    /// 从现有 CSR 矩阵复制其稀疏结构。
+    /// 创建当前 CSR 结构的独立深复制。
     /// </summary>
-    /// <param name="matrix">源 CSR 矩阵。</param>
-    /// <returns>与源矩阵具有相同维度和条目位置的新结构。</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="matrix"/> 为 <see langword="null"/> 时抛出。</exception>
-    public static CsrMatrixPattern FromCsr(CsrMatrix matrix)
-    {
-        ArgumentNullException.ThrowIfNull(matrix);
+    /// <returns>不与当前实例共享结构数组的新 CSR 结构。</returns>
+    public CsrMatrixPattern Clone()
+        => new(
+            this.RowCount,
+            this.ColumnCount,
+            (int[])this.RowOffsets.Clone(),
+            (int[])this.ColumnIndices.Clone());
 
-        return new CsrMatrixPattern(matrix.RowCount, matrix.ColumnCount,
-            (int[])matrix.RowOffsets.Clone(), (int[])matrix.ColumnIndices.Clone());
+    internal static CsrMatrixPattern Create(
+        int rowCount,
+        int columnCount,
+        int[] rowOffsets,
+        int[] columnIndices)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(rowCount, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(columnCount, 1);
+        ArgumentNullException.ThrowIfNull(rowOffsets);
+        ArgumentNullException.ThrowIfNull(columnIndices);
+
+        if (rowOffsets.Length != rowCount + 1)
+            throw new ArgumentException("CSR row offset count must equal rowCount + 1.", nameof(rowOffsets));
+
+        if (rowOffsets[0] != 0 || rowOffsets[^1] != columnIndices.Length)
+            throw new ArgumentException("CSR row offsets are inconsistent with column index count.", nameof(rowOffsets));
+
+        for (var row = 0; row < rowCount; row++)
+        {
+            var start = rowOffsets[row];
+            var end = rowOffsets[row + 1];
+
+            if (start > end)
+                throw new ArgumentException("CSR row offsets must be nondecreasing.", nameof(rowOffsets));
+
+            var previousColumn = -1;
+            for (var index = start; index < end; index++)
+            {
+                var column = columnIndices[index];
+                if ((uint)column >= (uint)columnCount)
+                    throw new ArgumentOutOfRangeException(nameof(columnIndices), "CSR column index is out of range.");
+
+                if (column <= previousColumn)
+                {
+                    throw new ArgumentException(
+                        "CSR column indices must be strictly increasing within each row.",
+                        nameof(columnIndices));
+                }
+
+                previousColumn = column;
+            }
+        }
+
+        return new CsrMatrixPattern(rowCount, columnCount, rowOffsets, columnIndices);
     }
 
     /// <summary>
@@ -57,23 +108,6 @@ public sealed class CsrMatrixPattern
     /// </summary>
     /// <returns>长度为 <see cref="NonZeroCount"/> 且所有元素为零的数组。</returns>
     public double[] CreateValueBuffer() => new double[this.NonZeroCount];
-
-    /// <summary>
-    /// 使用指定数值创建 CSR 矩阵。
-    /// </summary>
-    /// <param name="values">按 CSR 条目顺序排列的数值。</param>
-    /// <returns>由当前结构和指定数值组成的新 CSR 矩阵。</returns>
-    /// <exception cref="ArgumentException">数值数量与结构中的条目数不匹配时抛出。</exception>
-    public CsrMatrix ToCsr(ReadOnlySpan<double> values)
-    {
-        if (values.Length != this.NonZeroCount)
-            throw new ArgumentException("Value count must equal pattern nonzero count.", nameof(values));
-
-        return new CsrMatrix(this.RowCount, this.ColumnCount,
-            (int[])this.RowOffsets.Clone(),
-            (int[])this.ColumnIndices.Clone(),
-            values.ToArray());
-    }
 
     /// <summary>
     /// 查找指定矩阵位置在 CSR 数组中的条目索引。

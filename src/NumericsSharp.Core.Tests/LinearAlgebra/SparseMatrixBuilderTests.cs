@@ -75,6 +75,17 @@ public sealed class SparseMatrixBuilderTests
     }
 
     [Fact]
+    public void CsrMatrix_RejectsUnsortedColumnIndices()
+    {
+        Assert.Throws<ArgumentException>(() => new CsrMatrix(
+            2,
+            2,
+            [0, 2, 2],
+            [1, 0],
+            [1.0, 2.0]));
+    }
+
+    [Fact]
     public void AddSymmetricSubmatrix_ExpandsUpperTriangleToFullMatrix()
     {
         var builder = new SparseMatrixBuilder(3, 3);
