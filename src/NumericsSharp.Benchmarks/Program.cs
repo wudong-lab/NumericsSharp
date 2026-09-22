@@ -83,6 +83,13 @@ public class SparseSolverBenchmarks
         return result.FinalResidualNorm;
     }
 
+    [Benchmark]
+    public bool PardisoSpdUpperCsrRefactorize()
+    {
+        this._pardisoSpdUpperCsr.Factorize(this._matrix);
+        return this._pardisoSpdUpperCsr.IsFactorized;
+    }
+
     private static CsrMatrix CreatePoissonMatrix(int gridSize)
     {
         var order = checked(gridSize * gridSize);

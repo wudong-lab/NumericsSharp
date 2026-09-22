@@ -60,9 +60,12 @@ public sealed class PardisoSolver : IDirectSparseSolver
         if (this._matrix is null || this._handle is null)
             throw new InvalidOperationException("PARDISO matrix must be analyzed before factorization.");
 
-        var factorizationMatrix = PardisoCsrMatrix.FromCsr(matrix, this.Options.MatrixType);
-        ThrowIfDifferentStructure(this._matrix, factorizationMatrix);
-        this._matrix = factorizationMatrix;
+        if (!this._matrix.TryUpdateValues(matrix))
+        {
+            throw new ArgumentException(
+                "PARDISO factorization matrix structure must match the analyzed matrix structure.",
+                nameof(matrix));
+        }
         this.ApplyThreadingOptions();
 
         var status = this._handle.Factorize(this._matrix.Values);
@@ -106,7 +109,9 @@ public sealed class PardisoSolver : IDirectSparseSolver
             throw new ArgumentException("Solution length must equal matrix column count multiplied by right hand side count.", nameof(solution));
         }
 
-        var initialResidualNorm = ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount);
+        var initialResidualNorm = this.Options.ComputeResiduals
+            ? ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount)
+            : double.NaN;
 
         if (!this.IsFactorized)
         {
@@ -123,7 +128,9 @@ public sealed class PardisoSolver : IDirectSparseSolver
         var status = this._handle.Solve(rightHandSide, solution, rightHandSideCount);
         this.ThrowIfPardisoFailed(status, operation: "PARDISO solve", expectedPhase: 33);
 
-        var finalResidualNorm = ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount);
+        var finalResidualNorm = this.Options.ComputeResiduals
+            ? ComputeMaxResidualNorm(matrix, solution, rightHandSide, rightHandSideCount)
+            : double.NaN;
         return new SolverResult(SolverStatus.Converged, 0, initialResidualNorm, finalResidualNorm);
     }
 
@@ -185,19 +192,6 @@ public sealed class PardisoSolver : IDirectSparseSolver
         if (matrix.RowCount != matrix.ColumnCount)
         {
             throw new ArgumentException("PARDISO solver requires a square matrix.", nameof(matrix));
-        }
-    }
-
-    private static void ThrowIfDifferentStructure(PardisoCsrMatrix analyzedMatrix, PardisoCsrMatrix factorizationMatrix)
-    {
-        if (analyzedMatrix.Order != factorizationMatrix.Order
-            || analyzedMatrix.NonZeroCount != factorizationMatrix.NonZeroCount
-            || !analyzedMatrix.RowPointers.AsSpan().SequenceEqual(factorizationMatrix.RowPointers)
-            || !analyzedMatrix.Columns.AsSpan().SequenceEqual(factorizationMatrix.Columns))
-        {
-            throw new ArgumentException(
-                "PARDISO factorization matrix structure must match the analyzed matrix structure.",
-                nameof(factorizationMatrix));
         }
     }
 

@@ -231,6 +231,15 @@ NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoAnalyze(
         return NsMklNativeStatus::InvalidArgument;
     }
 
+#ifdef NUMERICS_SHARP_USE_MKL
+    if (handle->analyzed)
+    {
+        release_pardiso(handle);
+    }
+#endif
+
+    handle->analyzed = false;
+    handle->factorized = false;
     handle->order = order;
     handle->nonZeroCount = nonZeroCount;
     handle->matrixType = matrixType;
@@ -255,7 +264,6 @@ NS_MKL_NATIVE_API NsMklNativeStatus NumericsSharp_PardisoAnalyze(
 #endif
 
     handle->analyzed = true;
-    handle->factorized = false;
 
     return NsMklNativeStatus::Success;
 }

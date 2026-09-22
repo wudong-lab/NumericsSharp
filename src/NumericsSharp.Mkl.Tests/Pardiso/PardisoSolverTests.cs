@@ -47,6 +47,37 @@ public sealed class PardisoSolverTests
     }
 
     [Fact]
+    public void Options_EnableResidualComputationByDefault()
+    {
+        var options = new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite);
+
+        Assert.True(options.ComputeResiduals);
+    }
+
+    [Fact]
+    public void Solve_CanSkipResidualComputationWhenNativeMklIsAvailable()
+    {
+        if (!NativeLibraryTestResolver.TryRegister())
+        {
+            return;
+        }
+
+        using var solver = new PardisoSolver(
+            new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite)
+            {
+                ComputeResiduals = false
+            });
+        var solution = new double[2];
+
+        var result = solver.Solve(CreateDiagonalMatrix(2.0, 4.0), [2.0, 8.0], solution);
+
+        Assert.True(result.Converged);
+        Assert.Equal([1.0, 2.0], solution);
+        Assert.True(double.IsNaN(result.InitialResidualNorm));
+        Assert.True(double.IsNaN(result.FinalResidualNorm));
+    }
+
+    [Fact]
     public void Constructor_RejectsInvalidThreadingOptions()
     {
         var options = new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite)
@@ -285,6 +316,32 @@ public sealed class PardisoSolverTests
         AssertEqual([1.0, 2.0], firstSolution, 1e-12);
         AssertEqual([3.0, 4.0], secondSolution, 1e-12);
         Assert.InRange(secondResult.FinalResidualNorm, 0.0, 1e-12);
+    }
+
+    [Fact]
+    public void Analyze_CanReplacePreviousStructureWhenNativeMklIsAvailable()
+    {
+        if (!NativeLibraryTestResolver.TryRegister())
+        {
+            return;
+        }
+
+        var firstMatrix = CreateDiagonalMatrix(2.0, 4.0);
+        var secondBuilder = new SparseMatrixBuilder(2, 2);
+        secondBuilder.AddSymmetric(0, 0, 3.0);
+        secondBuilder.AddSymmetric(0, 1, 1.0);
+        secondBuilder.AddSymmetric(1, 1, 5.0);
+        var secondMatrix = secondBuilder.ToCsr();
+        using var solver = CreateSpdSolver();
+
+        solver.Factorize(firstMatrix);
+        solver.Analyze(secondMatrix);
+        var solution = new double[2];
+        var result = solver.Solve(secondMatrix, [1.0, 2.0], solution);
+
+        Assert.True(result.Converged);
+        AssertEqual([3.0 / 14.0, 5.0 / 14.0], solution, 1e-12);
+        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
     }
 
     [Fact]

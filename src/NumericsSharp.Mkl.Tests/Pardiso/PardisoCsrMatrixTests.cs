@@ -43,4 +43,47 @@ public sealed class PardisoCsrMatrixTests
         Assert.Equal([0, 1, 2, 1, 2, 2], matrix.Columns);
         Assert.Equal([2.0, -1.0, 0.5, 3.0, 4.0, 5.0], matrix.Values);
     }
+
+    [Fact]
+    public void TryUpdateValues_ReusesUpperTriangleStructure()
+    {
+        var firstMatrix = CreateSymmetricMatrix(2.0, -1.0, 3.0);
+        var secondMatrix = CreateSymmetricMatrix(5.0, 4.0, 7.0);
+        var adaptedMatrix = PardisoCsrMatrix.FromCsr(
+            firstMatrix,
+            PardisoMatrixType.RealSymmetricPositiveDefinite);
+        var rowPointers = adaptedMatrix.RowPointers;
+        var columns = adaptedMatrix.Columns;
+
+        Assert.True(adaptedMatrix.TryUpdateValues(secondMatrix));
+
+        Assert.Same(rowPointers, adaptedMatrix.RowPointers);
+        Assert.Same(columns, adaptedMatrix.Columns);
+        Assert.Equal([5.0, 4.0, 7.0], adaptedMatrix.Values);
+    }
+
+    [Fact]
+    public void TryUpdateValues_RejectsDifferentUpperTriangleStructure()
+    {
+        var firstMatrix = CreateSymmetricMatrix(2.0, -1.0, 3.0);
+        var differentMatrixBuilder = new SparseMatrixBuilder(2, 2);
+        differentMatrixBuilder.AddSymmetric(0, 0, 2.0);
+        differentMatrixBuilder.AddSymmetric(1, 1, 3.0);
+        var adaptedMatrix = PardisoCsrMatrix.FromCsr(
+            firstMatrix,
+            PardisoMatrixType.RealSymmetricPositiveDefinite);
+        var originalValues = adaptedMatrix.Values.ToArray();
+
+        Assert.False(adaptedMatrix.TryUpdateValues(differentMatrixBuilder.ToCsr()));
+        Assert.Equal(originalValues, adaptedMatrix.Values);
+    }
+
+    private static CsrMatrix CreateSymmetricMatrix(double diagonal0, double offDiagonal, double diagonal1)
+    {
+        var builder = new SparseMatrixBuilder(2, 2);
+        builder.AddSymmetric(0, 0, diagonal0);
+        builder.AddSymmetric(0, 1, offDiagonal);
+        builder.AddSymmetric(1, 1, diagonal1);
+        return builder.ToCsr();
+    }
 }
