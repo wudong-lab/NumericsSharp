@@ -208,6 +208,11 @@ public sealed class SparseMatrixBuilder
     private readonly record struct Entry(int Row, int Column, double Value) : IComparable<Entry>
     {
         public int CompareTo(Entry other)
-            => (this.Row, this.Column).CompareTo((other.Row, other.Column));
+        {
+            var rowComparison = this.Row.CompareTo(other.Row);
+            return rowComparison != 0
+                ? rowComparison
+                : this.Column.CompareTo(other.Column);
+        }
     }
 }
