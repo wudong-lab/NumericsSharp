@@ -13,7 +13,9 @@ public sealed class MklBackendException : Exception
             matrixType: null,
             order: null,
             nonZeroCount: null,
-            pardisoErrorCode: null) { }
+            pardisoErrorCode: null)
+    {
+    }
 
     public MklBackendException(
         int statusCode,
