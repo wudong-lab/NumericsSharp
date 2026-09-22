@@ -46,6 +46,28 @@ public sealed class CsrMatrix : ILinearOperator
     public int[] ColumnIndices { get; }
     public double[] Values { get; }
 
+    /// <summary>
+    /// Gets the value at the specified matrix position, or zero when the entry is not stored.
+    /// </summary>
+    public double GetValue(int row, int column)
+    {
+        if ((uint)row >= (uint)this.RowCount)
+            throw new ArgumentOutOfRangeException(nameof(row));
+
+        if ((uint)column >= (uint)this.ColumnCount)
+            throw new ArgumentOutOfRangeException(nameof(column));
+
+        for (var index = this.RowOffsets[row]; index < this.RowOffsets[row + 1]; index++)
+        {
+            if (this.ColumnIndices[index] == column)
+            {
+                return this.Values[index];
+            }
+        }
+
+        return 0.0;
+    }
+
     public void CopyDiagonalTo(Span<double> diagonal)
     {
         if (diagonal.Length != Math.Min(this.RowCount, this.ColumnCount))

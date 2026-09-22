@@ -54,6 +54,27 @@ public sealed class SparseMatrixBuilderTests
     }
 
     [Fact]
+    public void GetValue_ReturnsStoredValueAndZeroForMissingEntry()
+    {
+        var builder = new SparseMatrixBuilder(2, 3);
+        builder.Add(0, 1, 4.0);
+
+        var matrix = builder.ToCsr();
+
+        Assert.Equal(4.0, matrix.GetValue(0, 1));
+        Assert.Equal(0.0, matrix.GetValue(1, 2));
+    }
+
+    [Fact]
+    public void GetValue_ThrowsForOutOfRangeIndex()
+    {
+        var matrix = new SparseMatrixBuilder(2, 3).ToCsr();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => matrix.GetValue(2, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => matrix.GetValue(0, 3));
+    }
+
+    [Fact]
     public void AddSymmetricSubmatrix_ExpandsUpperTriangleToFullMatrix()
     {
         var builder = new SparseMatrixBuilder(3, 3);

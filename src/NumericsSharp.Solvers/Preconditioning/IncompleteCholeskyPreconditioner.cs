@@ -132,7 +132,7 @@ public sealed class IncompleteCholeskyPreconditioner : IPreconditioner
         {
             foreach (var column in rowColumns[row])
             {
-                var value = GetMatrixValue(matrix, row, column);
+                var value = matrix.GetValue(row, column);
 
                 if (column < row)
                 {
@@ -181,19 +181,6 @@ public sealed class IncompleteCholeskyPreconditioner : IPreconditioner
         return new FactorRows(
             rowColumns.Select(columns => columns.ToArray()).ToArray(),
             rowValues.Select(values => values.ToArray()).ToArray());
-    }
-
-    private static double GetMatrixValue(CsrMatrix matrix, int row, int column)
-    {
-        for (var index = matrix.RowOffsets[row]; index < matrix.RowOffsets[row + 1]; index++)
-        {
-            if (matrix.ColumnIndices[index] == column)
-            {
-                return matrix.Values[index];
-            }
-        }
-
-        return 0.0;
     }
 
     private sealed record FactorRows(int[][] Columns, double[][] Values);
