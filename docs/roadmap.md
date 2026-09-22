@@ -22,7 +22,7 @@
 
 5. [x] 约束边界条件与 PARDISO 集成测试
 
-   使用 `DirichletBoundaryCondition` 处理后的矩阵直接走 PARDISO，验证 FEM 常见约束流程。
+   使用 `CsrMatrix.ApplyDirichletBoundaryConditions` 处理后的矩阵直接走 PARDISO，验证 FEM 常见约束流程。
 
 6. [x] 小型 FEM 示例矩阵
 

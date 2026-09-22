@@ -323,7 +323,7 @@ public sealed class PardisoSolverTests
         builder.AddSymmetric(2, 2, 2.0);
 
         var rightHandSide = new[] { 0.0, 0.0, 0.0 };
-        var constrainedMatrix = DirichletBoundaryCondition.Apply(builder.ToCsr(), rightHandSide, [0], [10.0]);
+        var constrainedMatrix = builder.ToCsr().ApplyDirichletBoundaryConditions(rightHandSide, [0], [10.0]);
         var solution = new double[3];
         using var solver = CreateSpdSolver();
 
@@ -348,8 +348,7 @@ public sealed class PardisoSolverTests
         AddTrussElement(builder, nodeA: 1, nodeB: 2, xA: 1.0, yA: 0.0, xB: 0.0, yB: 1.0, axialStiffness: 100.0);
 
         var rightHandSide = new[] { 0.0, 0.0, 0.0, 0.0, 12.0, -8.0 };
-        var constrainedMatrix = DirichletBoundaryCondition.Apply(
-            builder.ToCsr(),
+        var constrainedMatrix = builder.ToCsr().ApplyDirichletBoundaryConditions(
             rightHandSide,
             [0, 1, 3],
             [0.0, 0.0, 0.0]);

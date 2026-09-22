@@ -2,10 +2,10 @@ using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Core.Tests.LinearAlgebra;
 
-public sealed class DirichletBoundaryConditionTests
+public sealed class CsrMatrixDirichletBoundaryConditionTests
 {
     [Fact]
-    public void Apply_EliminatesConstrainedRowsAndColumnsAndAdjustsRightHandSide()
+    public void ApplyDirichletBoundaryConditions_EliminatesConstrainedRowsAndColumnsAndAdjustsRightHandSide()
     {
         var builder = new SparseMatrixBuilder(3, 3);
         builder.AddSymmetric(0, 0, 2.0);
@@ -17,7 +17,7 @@ public sealed class DirichletBoundaryConditionTests
         var matrix = builder.ToCsr();
         var rightHandSide = new[] { 0.0, 0.0, 0.0 };
 
-        var constrainedMatrix = DirichletBoundaryCondition.Apply(matrix, rightHandSide, [0], [10.0]);
+        var constrainedMatrix = matrix.ApplyDirichletBoundaryConditions(rightHandSide, [0], [10.0]);
 
         Assert.Equal([0, 1, 3, 5], constrainedMatrix.RowOffsets);
         Assert.Equal([0, 1, 2, 1, 2], constrainedMatrix.ColumnIndices);
