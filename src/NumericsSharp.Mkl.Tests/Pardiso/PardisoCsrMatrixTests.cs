@@ -3,9 +3,10 @@ using NumericsSharp.Mkl.Pardiso;
 
 namespace NumericsSharp.Mkl.Tests.Pardiso;
 
+[TestClass]
 public sealed class PardisoCsrMatrixTests
 {
-    [Fact]
+    [TestMethod]
     public void FromCsr_PreservesZeroBasedCsrArrays()
     {
         var builder = new SparseMatrixBuilder(3, 3);
@@ -15,14 +16,14 @@ public sealed class PardisoCsrMatrixTests
 
         var matrix = PardisoCsrMatrix.FromCsr(builder.ToCsr());
 
-        Assert.Equal(3, matrix.Order);
-        Assert.Equal(3, matrix.NonZeroCount);
-        Assert.Equal([0, 2, 2, 3], matrix.RowPointers);
-        Assert.Equal([0, 2, 1], matrix.Columns);
-        Assert.Equal([2.0, -1.0, 4.0], matrix.Values);
+        Assert.AreEqual(3, matrix.Order);
+        Assert.AreEqual(3, matrix.NonZeroCount);
+        CollectionAssert.AreEqual(new[] {0, 2, 2, 3}, matrix.RowPointers);
+        CollectionAssert.AreEqual(new[] {0, 2, 1}, matrix.Columns);
+        CollectionAssert.AreEqual(new[] {2.0, -1.0, 4.0}, matrix.Values);
     }
 
-    [Fact]
+    [TestMethod]
     public void FromCsr_ForSymmetricMatrixType_KeepsUpperTriangleOnly()
     {
         var builder = new SparseMatrixBuilder(3, 3);
@@ -37,14 +38,14 @@ public sealed class PardisoCsrMatrixTests
             builder.ToCsr(),
             PardisoMatrixType.RealSymmetricPositiveDefinite);
 
-        Assert.Equal(3, matrix.Order);
-        Assert.Equal(6, matrix.NonZeroCount);
-        Assert.Equal([0, 3, 5, 6], matrix.RowPointers);
-        Assert.Equal([0, 1, 2, 1, 2, 2], matrix.Columns);
-        Assert.Equal([2.0, -1.0, 0.5, 3.0, 4.0, 5.0], matrix.Values);
+        Assert.AreEqual(3, matrix.Order);
+        Assert.AreEqual(6, matrix.NonZeroCount);
+        CollectionAssert.AreEqual(new[] {0, 3, 5, 6}, matrix.RowPointers);
+        CollectionAssert.AreEqual(new[] {0, 1, 2, 1, 2, 2}, matrix.Columns);
+        CollectionAssert.AreEqual(new[] {2.0, -1.0, 0.5, 3.0, 4.0, 5.0}, matrix.Values);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryUpdateValues_ReusesUpperTriangleStructure()
     {
         var firstMatrix = CreateSymmetricMatrix(2.0, -1.0, 3.0);
@@ -55,14 +56,14 @@ public sealed class PardisoCsrMatrixTests
         var rowPointers = adaptedMatrix.RowPointers;
         var columns = adaptedMatrix.Columns;
 
-        Assert.True(adaptedMatrix.TryUpdateValues(secondMatrix));
+        Assert.IsTrue(adaptedMatrix.TryUpdateValues(secondMatrix));
 
-        Assert.Same(rowPointers, adaptedMatrix.RowPointers);
-        Assert.Same(columns, adaptedMatrix.Columns);
-        Assert.Equal([5.0, 4.0, 7.0], adaptedMatrix.Values);
+        Assert.AreSame(rowPointers, adaptedMatrix.RowPointers);
+        Assert.AreSame(columns, adaptedMatrix.Columns);
+        CollectionAssert.AreEqual(new[] {5.0, 4.0, 7.0}, adaptedMatrix.Values);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryUpdateValues_RejectsDifferentUpperTriangleStructure()
     {
         var firstMatrix = CreateSymmetricMatrix(2.0, -1.0, 3.0);
@@ -74,8 +75,8 @@ public sealed class PardisoCsrMatrixTests
             PardisoMatrixType.RealSymmetricPositiveDefinite);
         var originalValues = adaptedMatrix.Values.ToArray();
 
-        Assert.False(adaptedMatrix.TryUpdateValues(differentMatrixBuilder.ToCsr()));
-        Assert.Equal(originalValues, adaptedMatrix.Values);
+        Assert.IsFalse(adaptedMatrix.TryUpdateValues(differentMatrixBuilder.ToCsr()));
+        CollectionAssert.AreEqual(originalValues, adaptedMatrix.Values);
     }
 
     private static CsrMatrix CreateSymmetricMatrix(double diagonal0, double offDiagonal, double diagonal1)

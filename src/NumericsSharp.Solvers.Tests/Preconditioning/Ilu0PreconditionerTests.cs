@@ -3,9 +3,10 @@ using NumericsSharp.Solvers.Preconditioning;
 
 namespace NumericsSharp.Solvers.Tests.Preconditioning;
 
+[TestClass]
 public sealed class Ilu0PreconditionerTests
 {
-    [Fact]
+    [TestMethod]
     public void Apply_SolvesExactLuForSmallDenseMatrix()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -19,7 +20,7 @@ public sealed class Ilu0PreconditionerTests
 
         preconditioner.Apply([1.0, 2.0], result);
 
-        Assert.InRange(Math.Abs(result[0] - 0.1), 0.0, 1e-12);
-        Assert.InRange(Math.Abs(result[1] - 0.6), 0.0, 1e-12);
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(result[0] - 0.1));
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(result[1] - 0.6));
     }
 }

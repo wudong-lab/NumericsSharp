@@ -2,9 +2,10 @@ using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Core.Tests.LinearAlgebra;
 
+[TestClass]
 public sealed class LinearSystemResidualTests
 {
-    [Fact]
+    [TestMethod]
     public void ComputeL2Norm_ReturnsZeroForExactSolution()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -17,6 +18,6 @@ public sealed class LinearSystemResidualTests
 
         var residualNorm = LinearSystemResidual.ComputeL2Norm(matrix, [1.0 / 11.0, 7.0 / 11.0], [1.0, 2.0]);
 
-        Assert.InRange(residualNorm, 0.0, 1e-14);
+        Assert.IsInRange(0.0, 1e-14, residualNorm);
     }
 }

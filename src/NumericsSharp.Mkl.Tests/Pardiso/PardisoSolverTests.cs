@@ -1,4 +1,4 @@
-﻿using NumericsSharp.Core.LinearAlgebra;
+using NumericsSharp.Core.LinearAlgebra;
 using NumericsSharp.Core.Threading;
 using NumericsSharp.Mkl.Tests.Native;
 using NumericsSharp.Mkl.Pardiso;
@@ -7,9 +7,10 @@ using NumericsSharp.Mkl.Interop;
 
 namespace NumericsSharp.Mkl.Tests.Pardiso;
 
+[TestClass]
 public sealed class PardisoSolverTests
 {
-    [Fact]
+    [TestMethod]
     public void Analyze_AcceptsSquareCsrMatrix()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -25,36 +26,36 @@ public sealed class PardisoSolverTests
 
         solver.Analyze(builder.ToCsr());
 
-        Assert.True(solver.IsAnalyzed);
-        Assert.False(solver.IsFactorized);
+        Assert.IsTrue(solver.IsAnalyzed);
+        Assert.IsFalse(solver.IsFactorized);
     }
 
-    [Fact]
+    [TestMethod]
     public void PardisoSolver_ImplementsDirectSparseSolverInterface()
     {
         using IDirectSparseSolver solver = CreateSpdSolver();
 
-        Assert.False(solver.IsAnalyzed);
-        Assert.False(solver.IsFactorized);
+        Assert.IsFalse(solver.IsAnalyzed);
+        Assert.IsFalse(solver.IsFactorized);
     }
 
-    [Fact]
+    [TestMethod]
     public void Options_UseExplicitMatrixType()
     {
         var options = new PardisoOptions(PardisoMatrixType.RealSymmetricIndefinite);
 
-        Assert.Equal(PardisoMatrixType.RealSymmetricIndefinite, options.MatrixType);
+        Assert.AreEqual(PardisoMatrixType.RealSymmetricIndefinite, options.MatrixType);
     }
 
-    [Fact]
+    [TestMethod]
     public void Options_EnableResidualComputationByDefault()
     {
         var options = new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite);
 
-        Assert.True(options.ComputeResiduals);
+        Assert.IsTrue(options.ComputeResiduals);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_CanSkipResidualComputationWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -71,13 +72,13 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(CreateDiagonalMatrix(2.0, 4.0), [2.0, 8.0], solution);
 
-        Assert.True(result.Converged);
-        Assert.Equal([1.0, 2.0], solution);
-        Assert.True(double.IsNaN(result.InitialResidualNorm));
-        Assert.True(double.IsNaN(result.FinalResidualNorm));
+        Assert.IsTrue(result.Converged);
+        CollectionAssert.AreEqual(new[] {1.0, 2.0}, solution);
+        Assert.IsTrue(double.IsNaN(result.InitialResidualNorm));
+        Assert.IsTrue(double.IsNaN(result.FinalResidualNorm));
     }
 
-    [Fact]
+    [TestMethod]
     public void Constructor_RejectsInvalidThreadingOptions()
     {
         var options = new PardisoOptions(PardisoMatrixType.RealSymmetricPositiveDefinite)
@@ -88,10 +89,10 @@ public sealed class PardisoSolverTests
             }
         };
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => new PardisoSolver(options));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PardisoSolver(options));
     }
 
-    [Fact]
+    [TestMethod]
     public void Analyze_AppliesManagedOuterParallelThreadingMode()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -113,10 +114,10 @@ public sealed class PardisoSolverTests
 
         solver.Analyze(matrix);
 
-        Assert.True(solver.IsAnalyzed);
+        Assert.IsTrue(solver.IsAnalyzed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesSmallSpdSystemWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -137,20 +138,20 @@ public sealed class PardisoSolverTests
         {
             var result = solver.Solve(matrix, [1.0, 2.0], solution);
 
-            Assert.True(result.Converged);
-            Assert.True(solver.IsAnalyzed);
-            Assert.True(solver.IsFactorized);
-            Assert.InRange(Math.Abs(solution[0] - 1.0 / 11.0), 0.0, 1e-12);
-            Assert.InRange(Math.Abs(solution[1] - 7.0 / 11.0), 0.0, 1e-12);
-            Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
+            Assert.IsTrue(result.Converged);
+            Assert.IsTrue(solver.IsAnalyzed);
+            Assert.IsTrue(solver.IsFactorized);
+            Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[0] - 1.0 / 11.0));
+            Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[1] - 7.0 / 11.0));
+            Assert.IsInRange(0.0, 1e-12, result.FinalResidualNorm);
         }
         catch (MklBackendException exception)
         {
-            Assert.Equal((int)MklNativeStatus.MklError, exception.StatusCode);
+            Assert.AreEqual((int)MklNativeStatus.MklError, exception.StatusCode);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesSmallSpdSystemWithSymmetricPositiveDefiniteMatrixType()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -170,15 +171,15 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(matrix, [1.0, 2.0], solution);
 
-        Assert.True(result.Converged);
-        Assert.True(solver.IsAnalyzed);
-        Assert.True(solver.IsFactorized);
-        Assert.InRange(Math.Abs(solution[0] - 1.0 / 11.0), 0.0, 1e-12);
-        Assert.InRange(Math.Abs(solution[1] - 7.0 / 11.0), 0.0, 1e-12);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
+        Assert.IsTrue(result.Converged);
+        Assert.IsTrue(solver.IsAnalyzed);
+        Assert.IsTrue(solver.IsFactorized);
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[0] - 1.0 / 11.0));
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[1] - 7.0 / 11.0));
+        Assert.IsInRange(0.0, 1e-12, result.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesMultipleRightHandSidesWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -198,14 +199,14 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(matrix, rightHandSides, solutions, rightHandSideCount: 2);
 
-        Assert.True(result.Converged);
-        Assert.True(solver.IsAnalyzed);
-        Assert.True(solver.IsFactorized);
+        Assert.IsTrue(result.Converged);
+        Assert.IsTrue(solver.IsAnalyzed);
+        Assert.IsTrue(solver.IsFactorized);
         AssertEqual([1.0 / 11.0, 7.0 / 11.0, 7.0 / 11.0, 27.0 / 11.0], solutions, 1e-12);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
+        Assert.IsInRange(0.0, 1e-12, result.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ThrowsWhenMultipleRightHandSideLengthIsInvalid()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -214,10 +215,10 @@ public sealed class PardisoSolverTests
 
         using IDirectSparseSolver solver = CreateSpdSolver();
 
-        Assert.Throws<ArgumentException>(() => solver.Solve(builder.ToCsr(), [1.0, 2.0, 3.0], new double[4], rightHandSideCount: 2));
+        Assert.ThrowsExactly<ArgumentException>(() => solver.Solve(builder.ToCsr(), [1.0, 2.0, 3.0], new double[4], rightHandSideCount: 2));
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesLegacySparseSolveCaseWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -231,12 +232,12 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(matrix, [1.0, 2.0, 3.0, 4.0, 5.0], solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual([-326.3333333, 983.0, 163.4166667, 398.0, 61.5], solution, 1e-5);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-9);
+        Assert.IsInRange(0.0, 1e-9, result.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesLegacyUnsymmetricDenseCaseWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -252,12 +253,12 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(matrix, rightHandSide, solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual([-0.80071, -0.69524, 0.59391, 1.32173, 0.56576], solution, 1e-5);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-9);
+        Assert.IsInRange(0.0, 1e-9, result.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Factorize_UpdatesStateWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -275,19 +276,19 @@ public sealed class PardisoSolverTests
         {
             solver.Factorize(builder.ToCsr());
 
-            Assert.True(solver.IsAnalyzed);
-            Assert.True(solver.IsFactorized);
+            Assert.IsTrue(solver.IsAnalyzed);
+            Assert.IsTrue(solver.IsFactorized);
         }
         catch (MklBackendException exception)
         {
-            Assert.Equal((int)MklNativeStatus.MklError, exception.StatusCode);
-            Assert.Equal(nameof(MklNativeStatus.MklError), exception.StatusName);
-            Assert.True(solver.IsAnalyzed);
-            Assert.False(solver.IsFactorized);
+            Assert.AreEqual((int)MklNativeStatus.MklError, exception.StatusCode);
+            Assert.AreEqual(nameof(MklNativeStatus.MklError), exception.StatusName);
+            Assert.IsTrue(solver.IsAnalyzed);
+            Assert.IsFalse(solver.IsFactorized);
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void Factorize_ReusesAnalyzeAndRefreshesValuesWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -311,14 +312,14 @@ public sealed class PardisoSolverTests
         var secondSolution = new double[2];
         var secondResult = solver.Solve(secondMatrix, [15.0, 40.0], secondSolution);
 
-        Assert.True(firstResult.Converged);
-        Assert.True(secondResult.Converged);
+        Assert.IsTrue(firstResult.Converged);
+        Assert.IsTrue(secondResult.Converged);
         AssertEqual([1.0, 2.0], firstSolution, 1e-12);
         AssertEqual([3.0, 4.0], secondSolution, 1e-12);
-        Assert.InRange(secondResult.FinalResidualNorm, 0.0, 1e-12);
+        Assert.IsInRange(0.0, 1e-12, secondResult.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Analyze_CanReplacePreviousStructureWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -339,12 +340,12 @@ public sealed class PardisoSolverTests
         var solution = new double[2];
         var result = solver.Solve(secondMatrix, [1.0, 2.0], solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual([3.0 / 14.0, 5.0 / 14.0], solution, 1e-12);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
+        Assert.IsInRange(0.0, 1e-12, result.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Factorize_ThrowsWhenAnalyzedStructureDiffers()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -361,10 +362,10 @@ public sealed class PardisoSolverTests
         using var solver = CreateSpdSolver();
         solver.Analyze(analyzedMatrix);
 
-        Assert.Throws<ArgumentException>(() => solver.Factorize(builder.ToCsr()));
+        Assert.ThrowsExactly<ArgumentException>(() => solver.Factorize(builder.ToCsr()));
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesDirichletConstrainedSpdSystemWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -386,12 +387,12 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(constrainedMatrix, rightHandSide, solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual([10.0, 20.0 / 3.0, 10.0 / 3.0], solution, 1e-12);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-12);
+        Assert.IsInRange(0.0, 1e-12, result.FinalResidualNorm);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ComputesSmallTwoDimensionalTrussAssemblyWhenNativeMklIsAvailable()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -414,9 +415,9 @@ public sealed class PardisoSolverTests
 
         var result = solver.Solve(constrainedMatrix, rightHandSide, solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual([0.0, 0.0, 0.0], [solution[0], solution[1], solution[3]], 1e-12);
-        Assert.InRange(result.FinalResidualNorm, 0.0, 1e-10);
+        Assert.IsInRange(0.0, 1e-10, result.FinalResidualNorm);
     }
 
     private static CsrMatrix CreateLegacyDirectSparseSolveMatrix()
@@ -513,11 +514,11 @@ public sealed class PardisoSolverTests
 
     private static void AssertEqual(ReadOnlySpan<double> expected, ReadOnlySpan<double> actual, double tolerance)
     {
-        Assert.Equal(expected.Length, actual.Length);
+        Assert.AreEqual(expected.Length, actual.Length);
 
         for (var i = 0; i < expected.Length; i++)
         {
-            Assert.InRange(Math.Abs(actual[i] - expected[i]), 0.0, tolerance);
+            Assert.IsInRange(0.0, tolerance, Math.Abs(actual[i] - expected[i]));
         }
     }
 }

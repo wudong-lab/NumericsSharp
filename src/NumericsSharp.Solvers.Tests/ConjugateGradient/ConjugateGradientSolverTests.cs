@@ -4,9 +4,10 @@ using NumericsSharp.Solvers.Preconditioning;
 
 namespace NumericsSharp.Solvers.Tests.ConjugateGradient;
 
+[TestClass]
 public sealed class ConjugateGradientSolverTests
 {
-    [Fact]
+    [TestMethod]
     public void Solve_ConvergesForSmallSpdSystem()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -21,12 +22,12 @@ public sealed class ConjugateGradientSolverTests
 
         var result = solver.Solve(matrix, rightHandSide, solution);
 
-        Assert.True(result.Converged);
-        Assert.InRange(Math.Abs(solution[0] - 1.0 / 11.0), 0.0, 1e-12);
-        Assert.InRange(Math.Abs(solution[1] - 7.0 / 11.0), 0.0, 1e-12);
+        Assert.IsTrue(result.Converged);
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[0] - 1.0 / 11.0));
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[1] - 7.0 / 11.0));
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_ConvergesForLegacyDirectSparseSolveCase()
     {
         var matrix = CreateLegacyDirectSparseSolveMatrix();
@@ -45,12 +46,12 @@ public sealed class ConjugateGradientSolverTests
                 RelativeTolerance = 1e-14
             });
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual(expected, solution, 1e-5);
-        Assert.InRange(LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide), 0.0, 1e-10);
+        Assert.IsInRange(0.0, 1e-10, LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide));
     }
 
-    [Fact]
+    [TestMethod]
     public void LinearSolver_SolvesThroughCommonSolverInterface()
     {
         var matrix = CreateLegacyDirectSparseSolveMatrix();
@@ -66,11 +67,11 @@ public sealed class ConjugateGradientSolverTests
 
         var result = solver.Solve(matrix, rightHandSide, solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual(expected, solution, 1e-5);
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_WithJacobiPreconditioner_ConvergesForSmallSpdSystem()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -86,12 +87,12 @@ public sealed class ConjugateGradientSolverTests
 
         var result = solver.Solve(matrix, preconditioner, rightHandSide, solution);
 
-        Assert.True(result.Converged);
-        Assert.InRange(Math.Abs(solution[0] - 1.0 / 11.0), 0.0, 1e-12);
-        Assert.InRange(Math.Abs(solution[1] - 7.0 / 11.0), 0.0, 1e-12);
+        Assert.IsTrue(result.Converged);
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[0] - 1.0 / 11.0));
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(solution[1] - 7.0 / 11.0));
     }
 
-    [Fact]
+    [TestMethod]
     public void Solve_WithJacobiPreconditioner_ConvergesForLegacyDirectSparseSolveCase()
     {
         var matrix = CreateLegacyDirectSparseSolveMatrix();
@@ -112,12 +113,12 @@ public sealed class ConjugateGradientSolverTests
                 RelativeTolerance = 1e-14
             });
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual(expected, solution, 1e-5);
-        Assert.InRange(LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide), 0.0, 1e-10);
+        Assert.IsInRange(0.0, 1e-10, LinearSystemResidual.ComputeL2Norm(matrix, solution, rightHandSide));
     }
 
-    [Fact]
+    [TestMethod]
     public void LinearSolver_UsesPreconditionerWhenProvided()
     {
         var matrix = CreateLegacyDirectSparseSolveMatrix();
@@ -135,7 +136,7 @@ public sealed class ConjugateGradientSolverTests
 
         var result = solver.Solve(matrix, rightHandSide, solution);
 
-        Assert.True(result.Converged);
+        Assert.IsTrue(result.Converged);
         AssertEqual(expected, solution, 1e-5);
     }
 
@@ -159,11 +160,11 @@ public sealed class ConjugateGradientSolverTests
 
     private static void AssertEqual(ReadOnlySpan<double> expected, ReadOnlySpan<double> actual, double tolerance)
     {
-        Assert.Equal(expected.Length, actual.Length);
+        Assert.AreEqual(expected.Length, actual.Length);
 
         for (var i = 0; i < expected.Length; i++)
         {
-            Assert.InRange(Math.Abs(actual[i] - expected[i]), 0.0, tolerance);
+            Assert.IsInRange(0.0, tolerance, Math.Abs(actual[i] - expected[i]));
         }
     }
 }

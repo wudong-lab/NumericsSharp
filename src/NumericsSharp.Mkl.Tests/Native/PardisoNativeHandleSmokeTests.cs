@@ -1,12 +1,13 @@
-﻿using NumericsSharp.Mkl.Interop;
+using NumericsSharp.Mkl.Interop;
 using NumericsSharp.Mkl.Pardiso;
 using PardisoNativeHandle = NumericsSharp.Mkl.Pardiso.PardisoNativeHandle;
 
 namespace NumericsSharp.Mkl.Tests.Native;
 
+[TestClass]
 public sealed class PardisoNativeHandleSmokeTests
 {
-    [Fact]
+    [TestMethod]
     public void CreateDestroyAndAnalyze_CanCallNativeDllWhenBuilt()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -23,10 +24,10 @@ public sealed class PardisoNativeHandleSmokeTests
             columns,
             PardisoMatrixType.RealSymmetricPositiveDefinite);
 
-        Assert.Equal(MklNativeStatus.Success, analyzeStatus);
+        Assert.AreEqual(MklNativeStatus.Success, analyzeStatus);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetLastError_ReturnsInitialPardisoErrorState()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -39,12 +40,12 @@ public sealed class PardisoNativeHandleSmokeTests
         int error;
         var status = handle.GetLastError(out phase, out error);
 
-        Assert.Equal(MklNativeStatus.Success, status);
-        Assert.Equal(0, phase);
-        Assert.Equal(0, error);
+        Assert.AreEqual(MklNativeStatus.Success, status);
+        Assert.AreEqual(0, phase);
+        Assert.AreEqual(0, error);
     }
 
-    [Fact]
+    [TestMethod]
     public void SetThreadCount_RejectsNonPositiveThreadCount()
     {
         if (!NativeLibraryTestResolver.TryRegister())
@@ -54,6 +55,6 @@ public sealed class PardisoNativeHandleSmokeTests
 
         var status = PardisoNativeHandle.SetThreadCount(0);
 
-        Assert.Equal(MklNativeStatus.InvalidArgument, status);
+        Assert.AreEqual(MklNativeStatus.InvalidArgument, status);
     }
 }

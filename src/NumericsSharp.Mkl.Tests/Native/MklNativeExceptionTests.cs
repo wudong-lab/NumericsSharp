@@ -1,29 +1,30 @@
-﻿using NumericsSharp.Mkl.Interop;
+using NumericsSharp.Mkl.Interop;
 
 namespace NumericsSharp.Mkl.Tests.Native;
 
+[TestClass]
 public sealed class MklNativeExceptionTests
 {
-    [Fact]
+    [TestMethod]
     public void ThrowIfFailed_DoesNotThrowForSuccess()
     {
         MklBackendException.ThrowIfFailed(MklNativeStatus.Success);
     }
 
-    [Fact]
+    [TestMethod]
     public void ThrowIfFailed_ThrowsForFailureStatus()
     {
-        var exception = Assert.Throws<MklBackendException>(
+        var exception = Assert.ThrowsExactly<MklBackendException>(
             () => MklBackendException.ThrowIfFailed(MklNativeStatus.InvalidArgument));
 
-        Assert.Equal((int)MklNativeStatus.InvalidArgument, exception.StatusCode);
-        Assert.Equal(nameof(MklNativeStatus.InvalidArgument), exception.StatusName);
+        Assert.AreEqual((int)MklNativeStatus.InvalidArgument, exception.StatusCode);
+        Assert.AreEqual(nameof(MklNativeStatus.InvalidArgument), exception.StatusName);
     }
 
-    [Fact]
+    [TestMethod]
     public void ThrowIfFailed_IncludesPardisoContext()
     {
-        var exception = Assert.Throws<MklBackendException>(
+        var exception = Assert.ThrowsExactly<MklBackendException>(
             () => MklBackendException.ThrowIfFailed(
                 MklNativeStatus.MklError,
                 operation: "PARDISO factorize",
@@ -33,12 +34,12 @@ public sealed class MklNativeExceptionTests
                 nonZeroCount: 6,
                 pardisoErrorCode: -4));
 
-        Assert.Equal("PARDISO factorize", exception.Operation);
-        Assert.Equal(12, exception.Phase);
-        Assert.Equal("RealSymmetricPositiveDefinite", exception.MatrixType);
-        Assert.Equal(3, exception.Order);
-        Assert.Equal(6, exception.NonZeroCount);
-        Assert.Equal(-4, exception.PardisoErrorCode);
-        Assert.Contains("PARDISO error code: -4", exception.Message);
+        Assert.AreEqual("PARDISO factorize", exception.Operation);
+        Assert.AreEqual(12, exception.Phase);
+        Assert.AreEqual("RealSymmetricPositiveDefinite", exception.MatrixType);
+        Assert.AreEqual(3, exception.Order);
+        Assert.AreEqual(6, exception.NonZeroCount);
+        Assert.AreEqual(-4, exception.PardisoErrorCode);
+        StringAssert.Contains(exception.Message, "PARDISO error code: -4");
     }
 }

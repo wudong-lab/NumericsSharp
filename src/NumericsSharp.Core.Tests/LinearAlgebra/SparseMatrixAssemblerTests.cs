@@ -2,9 +2,10 @@ using NumericsSharp.Core.LinearAlgebra;
 
 namespace NumericsSharp.Core.Tests.LinearAlgebra;
 
+[TestClass]
 public sealed class SparseMatrixAssemblerTests
 {
-    [Fact]
+    [TestMethod]
     public void ToCsr_ReusesFixedPatternWithoutSorting()
     {
         var patternBuilder = new SparseMatrixBuilder(3, 3);
@@ -25,12 +26,12 @@ public sealed class SparseMatrixAssemblerTests
 
         var matrix = assembler.ToCsr();
 
-        Assert.Equal([0, 2, 5, 7], matrix.RowOffsets);
-        Assert.Equal([0, 1, 0, 1, 2, 1, 2], matrix.ColumnIndices);
-        Assert.Equal([2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0], matrix.Values);
+        CollectionAssert.AreEqual(new[] {0, 2, 5, 7}, matrix.RowOffsets);
+        CollectionAssert.AreEqual(new[] {0, 1, 0, 1, 2, 1, 2}, matrix.ColumnIndices);
+        CollectionAssert.AreEqual(new[] {2.0, -1.0, -1.0, 2.0, -1.0, -1.0, 2.0}, matrix.Values);
     }
 
-    [Fact]
+    [TestMethod]
     public void ToCsr_SharesPatternWithAssembler()
     {
         var patternBuilder = new SparseMatrixBuilder(2, 2);
@@ -46,13 +47,13 @@ public sealed class SparseMatrixAssemblerTests
 
         var matrix = assembler.ToCsr();
 
-        Assert.Same(pattern, matrix.Pattern);
-        Assert.Same(pattern.RowOffsets, matrix.RowOffsets);
-        Assert.Same(pattern.ColumnIndices, matrix.ColumnIndices);
-        Assert.Equal([2.0, 3.0], matrix.Values);
+        Assert.AreSame(pattern, matrix.Pattern);
+        Assert.AreSame(pattern.RowOffsets, matrix.RowOffsets);
+        Assert.AreSame(pattern.ColumnIndices, matrix.ColumnIndices);
+        CollectionAssert.AreEqual(new[] {2.0, 3.0}, matrix.Values);
     }
 
-    [Fact]
+    [TestMethod]
     public void Pattern_CloneDoesNotShareStructureArrays()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -62,18 +63,18 @@ public sealed class SparseMatrixAssemblerTests
         var pattern = builder.ToCsr().Pattern;
         var clone = pattern.Clone();
 
-        Assert.NotSame(pattern, clone);
-        Assert.NotSame(pattern.RowOffsets, clone.RowOffsets);
-        Assert.NotSame(pattern.ColumnIndices, clone.ColumnIndices);
+        Assert.AreNotSame(pattern, clone);
+        Assert.AreNotSame(pattern.RowOffsets, clone.RowOffsets);
+        Assert.AreNotSame(pattern.ColumnIndices, clone.ColumnIndices);
 
         clone.RowOffsets[1] = 0;
         clone.ColumnIndices[0] = 1;
 
-        Assert.Equal([0, 1, 2], pattern.RowOffsets);
-        Assert.Equal([0, 1], pattern.ColumnIndices);
+        CollectionAssert.AreEqual(new[] {0, 1, 2}, pattern.RowOffsets);
+        CollectionAssert.AreEqual(new[] {0, 1}, pattern.ColumnIndices);
     }
 
-    [Fact]
+    [TestMethod]
     public void Add_ThrowsWhenEntryIsOutsidePattern()
     {
         var patternBuilder = new SparseMatrixBuilder(2, 2);
@@ -82,10 +83,10 @@ public sealed class SparseMatrixAssemblerTests
 
         var assembler = new SparseMatrixAssembler(patternBuilder.ToCsr().Pattern);
 
-        Assert.Throws<ArgumentException>(() => assembler.Add(0, 1, 1.0));
+        Assert.ThrowsExactly<ArgumentException>(() => assembler.Add(0, 1, 1.0));
     }
 
-    [Fact]
+    [TestMethod]
     public void Clear_AllowsRepeatedAssemblyWithSamePattern()
     {
         var patternBuilder = new SparseMatrixBuilder(2, 2);
@@ -97,6 +98,6 @@ public sealed class SparseMatrixAssemblerTests
         assembler.Clear();
         assembler.Add(1, 1, 3.0);
 
-        Assert.Equal([0.0, 3.0], assembler.ToCsr().Values);
+        CollectionAssert.AreEqual(new[] {0.0, 3.0}, assembler.ToCsr().Values);
     }
 }

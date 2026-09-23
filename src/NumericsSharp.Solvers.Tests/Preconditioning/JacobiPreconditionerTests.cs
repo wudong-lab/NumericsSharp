@@ -3,9 +3,10 @@ using NumericsSharp.Solvers.Preconditioning;
 
 namespace NumericsSharp.Solvers.Tests.Preconditioning;
 
+[TestClass]
 public sealed class JacobiPreconditionerTests
 {
-    [Fact]
+    [TestMethod]
     public void Apply_MultipliesResidualByInverseDiagonal()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -17,6 +18,6 @@ public sealed class JacobiPreconditionerTests
 
         preconditioner.Apply([2.0, 8.0], result);
 
-        Assert.Equal([1.0, 2.0], result);
+        CollectionAssert.AreEqual(new[] {1.0, 2.0}, result);
     }
 }

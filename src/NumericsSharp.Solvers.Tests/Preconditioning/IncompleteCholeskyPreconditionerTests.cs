@@ -3,9 +3,10 @@ using NumericsSharp.Solvers.Preconditioning;
 
 namespace NumericsSharp.Solvers.Tests.Preconditioning;
 
+[TestClass]
 public sealed class IncompleteCholeskyPreconditionerTests
 {
-    [Fact]
+    [TestMethod]
     public void Apply_SolvesExactCholeskyForSmallDenseSpdMatrix()
     {
         var builder = new SparseMatrixBuilder(2, 2);
@@ -18,7 +19,7 @@ public sealed class IncompleteCholeskyPreconditionerTests
 
         preconditioner.Apply([1.0, 2.0], result);
 
-        Assert.InRange(Math.Abs(result[0] - 1.0 / 11.0), 0.0, 1e-12);
-        Assert.InRange(Math.Abs(result[1] - 7.0 / 11.0), 0.0, 1e-12);
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(result[0] - 1.0 / 11.0));
+        Assert.IsInRange(0.0, 1e-12, Math.Abs(result[1] - 7.0 / 11.0));
     }
 }
